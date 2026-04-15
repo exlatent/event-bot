@@ -13,6 +13,7 @@ final readonly class ApplicationParams
         public int $telegramApiId = 0,
         public string $telegramApiHash = '',
         public string $telegramSessionPath = '',
+        public string $telegramBotToken = '',
         public string $openaiApiKey = '',
     ) {}
 }

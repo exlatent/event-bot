@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Web\Shared\Layout\Main;
 
+use App\Asset\BootstrapAsset;
+use App\Asset\JqueryAsset;
 use Yiisoft\Assets\AssetBundle;
 
 final class MainAsset extends AssetBundle
@@ -12,7 +14,11 @@ final class MainAsset extends AssetBundle
     public ?string $baseUrl = '@assetsUrl/main';
     public ?string $sourcePath = '@assetsSource/main';
 
-    public array $css = [
-        'site.css',
+//    public array $css = [
+//        'site.css',
+//    ];
+
+    public array $depends = [
+        JqueryAsset::class,
     ];
 }

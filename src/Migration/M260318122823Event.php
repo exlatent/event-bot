@@ -16,7 +16,7 @@ final class M260318122823Event implements RevertibleMigrationInterface
         if (!$b->getDb()->getTableSchema('event')) {
             $b->createTable('event', [
                 'id'              => $c::primaryKey(),
-                'message_id'      => $c::integer()->notNull(),
+                'message_id'      => $c::integer(),
                 'title'           => $c::string()->notNull(),
                 'datetime'        => $c::timestamp()->notNull(),
                 'location'        => $c::string()->notNull(),

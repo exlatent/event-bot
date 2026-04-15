@@ -19,6 +19,9 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     tty: true
+    environment:
+      XDEBUG_MODE: debug,develop
+      XDEBUG_CONFIG: client_host=host.docker.internal client_port=9003 idekey=PHPSTORM
 
   db:
     image: mysql:8.0

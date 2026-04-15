@@ -1,6 +1,6 @@
 FROM composer/composer:2-bin AS composer
 
-FROM dunglas/frankenphp:1-php8.2-bookworm AS base
+FROM dunglas/frankenphp:1-php8.4-bookworm AS base
 
 RUN apt update && apt -y install \
     unzip
@@ -32,6 +32,8 @@ ARG GROUP_NAME=appuser
 
 RUN install-php-extensions \
     xdebug
+
+COPY docker/dev/xdebug.ini /usr/local/etc/php/conf.d/99-xdebug.ini
 
 COPY --from=composer /composer /usr/bin/composer
 

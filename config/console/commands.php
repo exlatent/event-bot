@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Console;
 
 return [
-    'hello' => Console\HelloCommand::class,
+    'admin:add' => Console\AddAdminCommand::class,
     'mtinit' => Console\MPInitCommand::class,
     ...require __DIR__.'/commands/events.php',
 ];

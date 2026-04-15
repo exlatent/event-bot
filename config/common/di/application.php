@@ -16,6 +16,7 @@ return [
             'telegramApiId' => $params['telegram']['telegramApiId'],
             'telegramApiHash' => $params['telegram']['telegramApiHash'],
             'telegramSessionPath' => $params['telegram']['telegramSessionPath'],
+            'telegramBotToken' => $params['telegram_bot']['token'],
 
             'openaiApiKey' => $params['open_ai']['apiKey'],
         ],

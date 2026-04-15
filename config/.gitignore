@@ -2,3 +2,4 @@
 /common/db.php
 /common/open_ai.php
 /common/telegram.php
+/common/telegram_bot.php

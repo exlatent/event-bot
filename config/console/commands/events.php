@@ -9,4 +9,5 @@ return [
     'events:source-evaluate' => \App\Console\Events\SourceEvaluateCommand::class,
     'events:event-generate'  => \App\Console\Events\GenerateEventsCommand::class,
     'events:deduplicate'     => \App\Console\Events\DeduplicateCommand::class,
+    'events:publish'         => \App\Console\Events\PublishCommand::class,
 ];

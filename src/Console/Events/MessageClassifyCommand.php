@@ -5,8 +5,8 @@ declare(strict_types=1);
 
 namespace App\Console\Events;
 
-use App\Exceptions\InvalidJsonException;
-use App\Model\Telegram\Repository\MessageRepository;
+use App\Domain\Telegram\Repository\MessageRepository;
+use App\Infrastructure\Exceptions\InvalidJsonException;
 use App\Shared\ApplicationParams;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

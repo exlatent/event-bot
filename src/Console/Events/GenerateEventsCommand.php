@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Events;
 
-use App\Exceptions\InvalidJsonException;
-use App\Model\Event\Event;
-use App\Model\Event\Repository\EventRepository;
-use App\Model\Telegram\Repository\MessageRepository;
+use App\Domain\Event\Event;
+use App\Domain\Event\Repository\EventRepository;
+use App\Domain\Telegram\Repository\MessageRepository;
+use App\Infrastructure\Exceptions\InvalidJsonException;
 use App\Shared\ApplicationParams;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -122,16 +122,14 @@ final class GenerateEventsCommand extends Command
                     }
                     $event_repo = new EventRepository($this->connection);
                     $event_entity = new Event(
-                        null,
-                        $message->id,
-                        $event['title'],
-                        $event['datetime'],
-                        $event['location'],
-                        $event['price'],
-                        Event::STATE_DRAFT,
-                        null,
-                        date('Y-m-d H:i:s'),
-                        date('Y-m-d H:i:s'),
+                        message_id: $message->id,
+                        title: $event['title'],
+                        datetime: $event['datetime'],
+                        location: $event['location'],
+                        price: $event['price'],
+                        state: Event::STATE_DRAFT,
+                        createdAt: date('Y-m-d H:i:s'),
+                        updatedAt: date('Y-m-d H:i:s'),
                     );
 
                     $event_repo->save($event_entity);

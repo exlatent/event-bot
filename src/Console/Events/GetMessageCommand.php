@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\Console\Events;
 
 use App\Api\Telegram\TelegramClient;
-use App\Model\Telegram\Message;
-use App\Model\Telegram\Repository\MessageRepository;
-use App\Model\Telegram\Repository\SourceRepository;
+use App\Domain\Telegram\Message;
+use App\Domain\Telegram\Repository\MessageRepository;
+use App\Domain\Telegram\Repository\SourceRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
+
 #[AsCommand(
     name: 'events:get-message',
     description: 'Get messages from Telegram sources'
@@ -65,8 +66,8 @@ final class GetMessageCommand extends Command
             }
 
             return Command::SUCCESS;
-        } catch (\Throwable) {
-            $output->writeln('Error');
+        } catch (\Throwable $e) {
+            $output->writeln('Error: ' . $e->getMessage());
             return Command::FAILURE;
         }
     }

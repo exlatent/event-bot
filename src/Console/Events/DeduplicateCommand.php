@@ -5,15 +5,15 @@ declare(strict_types=1);
 
 namespace App\Console\Events;
 
-use Symfony\Component\Console\Attribute\AsCommand;
-use App\Exceptions\InvalidJsonException;
-use App\Model\Event\Event;
-use App\Model\Event\Repository\EventRepository;
+use App\Domain\Event\Event;
+use App\Domain\Event\Repository\EventRepository;
+use App\Infrastructure\Exceptions\InvalidJsonException;
 use App\Shared\ApplicationParams;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Yiisoft\Db\Connection\ConnectionInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Json\Json;
 
 #[AsCommand(

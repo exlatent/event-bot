@@ -19,6 +19,8 @@ return [
 
     'telegram' => require __DIR__ . '/telegram.php',
 
+    'telegram_bot' => require __DIR__ . '/telegram_bot.php',
+
     'open_ai' => require __DIR__ . '/open_ai.php',
 
     'yiisoft/view' => [

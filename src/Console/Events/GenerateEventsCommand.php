@@ -8,6 +8,7 @@ use App\Domain\Event\Event;
 use App\Domain\Event\Repository\EventRepository;
 use App\Domain\Telegram\Repository\MessageRepository;
 use App\Infrastructure\Exceptions\InvalidJsonException;
+use App\Shared\ApplicationDateTime;
 use App\Shared\ApplicationParams;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -84,7 +85,7 @@ final class GenerateEventsCommand extends Command
                 Проанализируй список сообщений из Telegram.
                 Из каждого сообщения выдели одно или несколько событий, для каждого определи:
                 title — название события
-                datetime — дата и время события
+                datetime — дата и время начала события
                 location — место проведения
                 price — стоимость посещения (если есть)
 
@@ -114,7 +115,7 @@ final class GenerateEventsCommand extends Command
                     if (
                         empty($event['title'])
                         || empty($event['datetime'])
-                        || $event['datetime'] < date('Y-m-d H:i:s')
+                        || ApplicationDateTime::fromDb($event['datetime']) < ApplicationDateTime::now()
                         || empty($event['location'])
                         || empty($event['price'])
                     ) {
@@ -124,19 +125,19 @@ final class GenerateEventsCommand extends Command
                     $event_entity = new Event(
                         message_id: $message->id,
                         title: $event['title'],
-                        datetime: $event['datetime'],
+                        datetime: ApplicationDateTime::toDb(ApplicationDateTime::fromInput($event['datetime'])),
                         location: $event['location'],
                         price: $event['price'],
                         state: Event::STATE_DRAFT,
-                        createdAt: date('Y-m-d H:i:s'),
-                        updatedAt: date('Y-m-d H:i:s'),
+                        createdAt: ApplicationDateTime::toDb(ApplicationDateTime::now()),
+                        updatedAt: ApplicationDateTime::toDb(ApplicationDateTime::now())
                     );
 
                     $event_repo->save($event_entity);
                     ++$count_events;
                 }
 
-                $message->processedAt = date('Y-m-d H:i:s');
+                $message->processedAt = ApplicationDateTime::toDb(ApplicationDateTime::now());
                 $repo->save($message);
                 ++$count_messages;
 

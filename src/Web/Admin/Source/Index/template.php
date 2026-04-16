@@ -6,6 +6,7 @@
 /** @var \Yiisoft\Router\UrlGeneratorInterface $url */
 
 use App\Domain\Telegram\Source;
+use App\Shared\ApplicationDateTime;
 use Yiisoft\Yii\DataView\GridView\Column\ActionColumn;
 use Yiisoft\Yii\DataView\GridView\Column\Base\DataContext;
 use Yiisoft\Yii\DataView\GridView\Column\DataColumn;
@@ -48,8 +49,18 @@ use Yiisoft\Data\Paginator\OffsetPaginator;
                 new DataColumn('id'),
                 new DataColumn('username'),
                 new DataColumn('title'),
-                new DataColumn('createdAt'),
-                new DataColumn('updatedAt'),
+                new DataColumn(
+                    property: 'createdAt',
+                    content: function (Source $model) {
+                        return ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->createdAt));
+                    }
+                ),
+                new DataColumn(
+                    property: 'updatedAt',
+                    content: function (Source $model) {
+                        return ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->updatedAt));
+                    }
+                ),
                 new DataColumn('is_active'),
                 new ActionColumn('{update}', null, null, null,
                     function ($action, DataContext $context) use ($url) {

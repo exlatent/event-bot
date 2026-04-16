@@ -5,30 +5,22 @@ declare(strict_types=1);
 
 namespace App\Web\Admin\Source\Update;
 
-use App\Domain\Rbac\AdminPanelPermission;
 use App\Domain\Telegram\Repository\SourceRepository;
 use App\Domain\Telegram\Source;
-use App\Infrastructure\CustomOffsetPaginator;
-use App\Infrastructure\DataReader;
-use HttpSoft\Message\ResponseFactory;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Log\LoggerInterface;
-use Yiisoft\Data\Paginator\OffsetPaginator;
-use Yiisoft\Data\Reader\Iterable\IterableDataReader;
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\FormModel\FormHydrator;
 use Yiisoft\Http\Method;
 use Yiisoft\Router\HydratorAttribute\RouteArgument;
-use Yiisoft\User\CurrentUser;
-use Yiisoft\Yii\View\Renderer\ViewRenderer;
-use Yiisoft\Yii\DataView\Pagination\OffsetPagination;
+use Yiisoft\Yii\View\Renderer\WebViewRenderer;
+use App\Shared\ApplicationDateTime;
 
 final readonly class Action
 {
     public function __construct(
-        private ViewRenderer $viewRenderer,
+        private WebViewRenderer $viewRenderer,
         private ConnectionInterface $connection,
         private FormHydrator $formHydrator,
         private ResponseFactoryInterface $responseFactory
@@ -54,7 +46,7 @@ final readonly class Action
                 $model->username = $form->username;
                 $model->title = $form->title;
                 $model->is_active = (bool)$form->is_active;
-                $model->updatedAt = date('Y-m-d H:i:s');
+                $model->updatedAt = ApplicationDateTime::toDb(ApplicationDateTime::now());
                 $repo->save($model);
 
                 return $this->responseFactory->createResponse()->withStatus(302)->withHeader('Location',

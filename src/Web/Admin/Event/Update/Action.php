@@ -7,6 +7,7 @@ namespace App\Web\Admin\Event\Update;
 
 use App\Domain\Event\Event;
 use App\Domain\Event\Repository\EventRepository;
+use App\Shared\ApplicationDateTime;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -15,12 +16,12 @@ use Yiisoft\FormModel\FormHydrator;
 use Yiisoft\Http\Method;
 use Yiisoft\Router\HydratorAttribute\RouteArgument;
 use Yiisoft\Session\Flash\Flash;
-use Yiisoft\Yii\View\Renderer\ViewRenderer;
+use Yiisoft\Yii\View\Renderer\WebViewRenderer;
 
 final readonly class Action
 {
     public function __construct(
-        private ViewRenderer $viewRenderer,
+        private WebViewRenderer $viewRenderer,
         private ConnectionInterface $connection,
         private FormHydrator $formHydrator,
         private ResponseFactoryInterface $responseFactory,
@@ -48,7 +49,8 @@ final readonly class Action
                 $model->location = $form->location;
                 $model->price = $form->price;
                 $model->state = $form->state;
-                $model->datetime = $form->datetime;
+                $model->datetime = ApplicationDateTime::toDb(ApplicationDateTime::fromInput($form->datetime));
+                $model->updatedAt = ApplicationDateTime::toDb(ApplicationDateTime::now());
                 $repo->save($model);
 
                 return $this->responseFactory->createResponse()->withStatus(302)->withHeader('Location',

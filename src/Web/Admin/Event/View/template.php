@@ -5,6 +5,7 @@
 /** @var \Yiisoft\Router\UrlGeneratorInterface $url */
 
 use App\Domain\Event\Event;
+use App\Shared\ApplicationDateTime;
 use Yiisoft\Yii\DataView\DetailView\DataField;
 use Yiisoft\Yii\DataView\DetailView\DetailView;
 use Yiisoft\Html\Html;
@@ -34,14 +35,28 @@ use Yiisoft\Html\Html;
                     label: 'Message'
                 ),
                 new DataField('title'),
-                new DataField('datetime'),
+                new DataField(
+                    property: 'datetime',
+                    value: ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->datetime))
+                ),
                 new DataField('location'),
                 new DataField('price'),
-                new DataField('createdAt'),
-                new DataField('updatedAt'),
+                new DataField(
+                    property: 'createdAt',
+                    value: ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->createdAt))
+                ),
+                new DataField(
+                    property: 'updatedAt',
+                    value: ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->updatedAt))
+                ),
                 new DataField('state'),
                 new DataField('duplicate_of_id'),
-                new DataField('lastCheckedAt')
+                new DataField(
+                    property: 'lastCheckedAt',
+                    value: $model->lastCheckedAt
+                        ? ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->lastCheckedAt))
+                        : ''
+                ),
             )
         ?>
 

@@ -6,6 +6,7 @@
 
 use App\Domain\Event\Event;
 use App\Domain\Telegram\Repository\MessageRepository;
+use App\Shared\ApplicationDateTime;
 use Yiisoft\Html\Html;
 use Yiisoft\Router\UrlGeneratorInterface;
 use Yiisoft\Yii\DataView\GridView\Column\ActionColumn;
@@ -56,7 +57,12 @@ use Yiisoft\Yii\DataView\GridView\GridView;
                     }
                 ),
                 new DataColumn('title'),
-                new DataColumn('datetime'),
+                new DataColumn(
+                    property: 'datetime',
+                    content: function (Event $model) {
+                        return ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->datetime));
+                    }
+                ),
                 new DataColumn('location'),
                 new DataColumn('price'),
                 new DataColumn(

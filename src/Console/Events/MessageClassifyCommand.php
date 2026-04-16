@@ -7,6 +7,7 @@ namespace App\Console\Events;
 
 use App\Domain\Telegram\Repository\MessageRepository;
 use App\Infrastructure\Exceptions\InvalidJsonException;
+use App\Shared\ApplicationDateTime;
 use App\Shared\ApplicationParams;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -108,7 +109,7 @@ final class MessageClassifyCommand extends Command
                 ) {
                     continue;
                 }
-                $message->analyzedAt = date('Y-m-d H:i:s');
+                $message->analyzedAt = ApplicationDateTime::toDb(ApplicationDateTime::now());
                 $message->event_candidate = $result['event_candidate'];
                 $message->spam = $result['spam'];
                 $message->off_topic = $result['offtopic'];

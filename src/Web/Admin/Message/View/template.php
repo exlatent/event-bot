@@ -8,6 +8,7 @@
 
 use App\Domain\Telegram\Message;
 use App\Domain\Telegram\Source;
+use App\Shared\ApplicationDateTime;
 use Yiisoft\Yii\DataView\DetailView\DataField;
 use Yiisoft\Yii\DataView\DetailView\DetailView;
 use Yiisoft\Html\Html;
@@ -40,14 +41,30 @@ use Yiisoft\Html\Html;
                 new DataField('tg_id'),
                 new DataField('source_tg_id'),
                 new DataField('message'),
-                new DataField('date'),
-                new DataField('createdAt'),
-                new DataField('analyzedAt'),
+                new DataField(
+                    property: 'date',
+                    value: ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->date))
+                ),
+                new DataField(
+                    property: 'createdAt',
+                    value: ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->createdAt))
+                ),
+                new DataField(
+                    property: 'analyzedAt',
+                    value: $model->analyzedAt
+                        ? ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->analyzedAt))
+                        : ''
+                ),
                 new DataField('event_candidate'),
                 new DataField('spam'),
                 new DataField('off_topic'),
                 new DataField('confidence'),
-                new DataField('processedAt'),
+                new DataField(
+                    property: 'processedAt',
+                    value: $model->processedAt
+                        ? ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->processedAt))
+                        : ''
+                ),
             )
         ?>
 

@@ -26,5 +26,11 @@ Thumbs.db
 c3.php
 /MadelineProto.log
 
-
 .env
+*.access.log
+*.error.log
+public/.htaccess
+public_html
+composer-setup.php
+composer.phar
+

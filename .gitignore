@@ -25,3 +25,6 @@ Thumbs.db
 # Codeception C3
 c3.php
 /MadelineProto.log
+
+
+.env

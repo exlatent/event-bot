@@ -12,6 +12,8 @@ use Yiisoft\Yii\Runner\Http\HttpApplicationRunner;
 
 $root = dirname(__DIR__);
 
+
+
 require_once $root . '/src/autoload.php';
 
 if (Environment::appC3()) {

@@ -8,6 +8,7 @@ namespace App\Console\Events;
 use App\Domain\Event\Event;
 use App\Domain\Event\Repository\EventRepository;
 use App\Infrastructure\Exceptions\InvalidJsonException;
+use App\Shared\ApplicationDateTime;
 use App\Shared\ApplicationParams;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -42,7 +43,7 @@ final class DeduplicateCommand extends Command
         {
             $count_events++;
             $dedup_candidates = $repo->getDedupCandidates($event);
-            $event->lastCheckedAt = date('Y-m-d H:i:s');
+            $event->lastCheckedAt = ApplicationDateTime::toDb(ApplicationDateTime::now());
             if (!empty($dedup_candidates)) {
                 $duplicates = $this->checkDuplicates($event, $dedup_candidates);
                 if (!empty($duplicates)) {

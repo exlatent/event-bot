@@ -7,6 +7,7 @@ namespace App\Web\Admin\Event\Create;
 
 use App\Domain\Event\Event;
 use App\Domain\Event\Repository\EventRepository;
+use App\Shared\ApplicationDateTime;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -14,12 +15,12 @@ use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\FormModel\FormHydrator;
 use Yiisoft\Http\Method;
 use Yiisoft\Session\Flash\Flash;
-use Yiisoft\Yii\View\Renderer\ViewRenderer;
+use Yiisoft\Yii\View\Renderer\WebViewRenderer;
 
 final readonly class Action
 {
     public function __construct(
-        private ViewRenderer $viewRenderer,
+        private WebViewRenderer $viewRenderer,
         private ConnectionInterface $connection,
         private ResponseFactoryInterface $responseFactory,
         private Flash $flash,
@@ -39,12 +40,12 @@ final readonly class Action
         if ($request->getMethod() === Method::POST) {
             if ($this->formHydrator->populateFromPostAndValidate($form, $request)) {
                 $model->title = $form->title;
-                $model->datetime = date('Y-m-d H:i:s', strtotime($form->datetime));
+                $model->datetime = ApplicationDateTime::toDb(ApplicationDateTime::fromInput($form->datetime));
                 $model->location = $form->location;
                 $model->price = $form->price;
                 $model->state = $form->state;
-                $model->createdAt = date('Y-m-d H:i:s');
-                $model->updatedAt = date('Y-m-d H:i:s');
+                $model->createdAt = ApplicationDateTime::toDb(ApplicationDateTime::now());
+                $model->updatedAt = ApplicationDateTime::toDb(ApplicationDateTime::now());
                 $repo->save($model);
 
                 return $this->responseFactory->createResponse()->withStatus(302)->withHeader('Location',

@@ -7,6 +7,7 @@
 /** @var \Yiisoft\View\WebView $this */
 
 use App\Domain\Telegram\Message;
+use App\Shared\ApplicationDateTime;
 use Yiisoft\Html\Html;
 use Yiisoft\Html\Tag\Input\Checkbox;
 use Yiisoft\Yii\DataView\GridView\Column\ActionColumn;
@@ -39,7 +40,7 @@ use Yiisoft\Yii\DataView\GridView\GridView;
             ->urlCreator(function (array $arguments, array $queryParameters): string {
                 $url = '';
                 if ($queryParameters) {
-                    $url .= '?'.http_build_query($queryParameters);
+                    $url .= '?' . http_build_query($queryParameters);
                 }
                 return $url;
             })
@@ -66,14 +67,32 @@ use Yiisoft\Yii\DataView\GridView\GridView;
                     property: 'message',
                     content: function (Message $model) {
                         return mb_strlen($model->message) > 100
-                            ? mb_substr($model->message, 0, 100).'...'
+                            ? mb_substr($model->message, 0, 100) . '...'
                             : $model->message;
                     }
                 ),
-                new DataColumn('date'),
-                new DataColumn('createdAt'),
+                new DataColumn(
+                    property: 'date',
+                    content: function (Message $model) {
+                        return ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->date));
+                    }
+                ),
+                new DataColumn(
+                    property: 'createdAt',
+                    content: function (Message $model) {
+                        return ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->createdAt));
+                    }
+                ),
                 new DataColumn('event_candidate'),
-                new DataColumn('processedAt'),
+                new DataColumn(
+                    property: 'processedAt',
+                    content: function (Message $model) {
+                        if ($model->processedAt) {
+                            return ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->processedAt));
+                        }
+                    }
+                ),
+    
                 new ActionColumn('{view} {update}', null, null, null,
                     function ($action, DataContext $context) use ($url) {
                         return $url->generate("admin:message:{$action}", ['id' => $context->data->id]);

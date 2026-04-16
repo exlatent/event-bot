@@ -6,7 +6,9 @@ namespace App\Web\Telegram\Callbacks;
 
 use App\Domain\Event\Event;
 use App\Domain\Event\Repository\EventRepository;
+use App\Shared\ApplicationDateTime;
 use App\Web\Telegram\Command\StartCommand;
+use DateTimeZone;
 use Telegram\Bot\Api;
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Json\Json;
@@ -36,12 +38,11 @@ final class DigestCallback
         if (empty($events)) {
             $this->bot->sendMessage([
                 'chat_id' => $chatId,
-                'text' => 'События не найдены, попробуйте изменить условия поиска.',
+                'text'    => 'События не найдены, попробуйте изменить условия поиска.',
             ]);
             return;
         }
 
-        // DAILY → одно сообщение
         if ($this->isDaily($data['period'])) {
             $message = $this->renderDailyMessage($events, $data['period']);
 
@@ -49,21 +50,19 @@ final class DigestCallback
             return;
         }
 
-        // WEEKLY → разбивка по дням
         if ($this->isWeekly($data['period'])) {
             foreach ($this->renderWeeklyMessages($events, $data['period']) as $message) {
                 $this->send($chatId, $message);
             }
-            return;
         }
     }
 
     private function send(int|string $chatId, string $message): void
     {
         $this->bot->sendMessage([
-            'chat_id' => $chatId,
-            'text' => $message,
-            'parse_mode' => 'HTML',
+            'chat_id'                  => $chatId,
+            'text'                     => $message,
+            'parse_mode'               => 'HTML',
             'disable_web_page_preview' => true,
         ]);
     }
@@ -88,30 +87,35 @@ final class DigestCallback
     {
         $from = '';
         $to = '';
+        $now = ApplicationDateTime::nowLocal();
 
         switch ($period) {
             case StartCommand::TODAY:
-                $from = date('Y-m-d 00:00:00');
-                $to = date('Y-m-d 23:59:59');
+                $from = $now->setTime(0, 0);
+                $to = $now->setTime(23, 59, 59);
                 break;
 
             case StartCommand::TOMORROW:
-                $from = date('Y-m-d 00:00:00', strtotime('+1 day'));
-                $to = date('Y-m-d 23:59:59', strtotime('+1 day'));
+                $tomorrow = $now->modify('+1 day');
+                $from = $tomorrow->setTime(0, 0);
+                $to = $tomorrow->setTime(23, 59, 59);
                 break;
 
             case StartCommand::CURRENT_WEEK:
-                $from = date('Y-m-d 00:00:00');
-                $to = date('Y-m-d 23:59:59', strtotime('sunday this week'));
+                $from = $now->setTime(0, 0);
+                $to = $now->modify('sunday this week')->setTime(23, 59, 59);
                 break;
 
             case StartCommand::NEXT_WEEK:
-                $from = date('Y-m-d 00:00:00', strtotime('monday next week'));
-                $to = date('Y-m-d 23:59:59', strtotime('sunday next week'));
+                $from = $now->modify('monday next week')->setTime(0, 0);
+                $to = $now->modify('sunday next week')->setTime(23, 59, 59);
                 break;
         }
 
-        return $this->repository->findDigestEvents($from, $to);
+        $fromUtc = $from->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+        $toUtc = $to->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+
+        return $this->repository->findDigestEvents($fromUtc, $toUtc);
     }
 
     /**
@@ -181,7 +185,7 @@ final class DigestCallback
             $index,
             $this->e($event->title),
             $this->e($event->location),
-            date('H:i', strtotime($event->datetime)),
+            ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($event->datetime))->format('H:i'),
             $this->e($event->price)
         );
 

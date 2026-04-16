@@ -8,6 +8,7 @@ use App\Api\Telegram\TelegramClient;
 use App\Domain\Telegram\Message;
 use App\Domain\Telegram\Repository\MessageRepository;
 use App\Domain\Telegram\Repository\SourceRepository;
+use App\Shared\ApplicationDateTime;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -48,13 +49,14 @@ final class GetMessageCommand extends Command
                     foreach ($result['messages'] as $message) {
                         if (!empty($message['message'])) {
                             $message_entity = new Message(
-                                null,
-                                $source->id,
-                                $message['id'] ?? '',
-                                $message['peer_id'] ?? '',
-                                $message['message'],
-                                isset($message['date']) ?  date('Y-m-d H:i:s', $message['date']): '',
-                                date('Y-m-d H:i:s'),
+                                source_id: $source->id,
+                                tg_id: $message['id'] ?? '',
+                                source_tg_id: $message['peer_id'] ?? '',
+                                message: $message['message'],
+                                date: isset($message['date'])
+                                    ? ApplicationDateTime::toDb(ApplicationDateTime::fromTimestamp($message['date']))
+                                    : null,
+                                createdAt: ApplicationDateTime::toDb(ApplicationDateTime::now()),
                             );
 
                             $message_repo->save($message_entity);

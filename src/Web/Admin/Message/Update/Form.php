@@ -32,9 +32,9 @@ final class Form extends FormModel
     public function __construct(
         public Message $model,
     ) {
-        $this->event_candidate = $this->model->event_candidate;
-        $this->spam = $this->model->spam;
-        $this->off_topic = $this->model->off_topic;
-        $this->confidence = $this->model->confidence;
+        $this->event_candidate = $this->model->event_candidate ?? 0;
+        $this->spam = $this->model->spam ?? 0;
+        $this->off_topic = $this->model->off_topic ?? 0;
+        $this->confidence = $this->model->confidence ?? 0;
     }
 }

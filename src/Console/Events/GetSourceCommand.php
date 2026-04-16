@@ -7,6 +7,7 @@ namespace App\Console\Events;
 use App\Api\Telegram\TelegramClient;
 use App\Domain\Telegram\Repository\SourceRepository;
 use App\Domain\Telegram\Source;
+use App\Shared\ApplicationDateTime;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -59,18 +60,17 @@ final class GetSourceCommand extends Command
                         'peer'  => $user['username'],
                         'limit' => 1
                     ]);
-                    if($repo->findOne(['tg_id' => $user['id']])) continue;
+                    if ($repo->findOne(['tg_id' => $user['id']])) {
+                        continue;
+                    }
                     if ($last_message_result['messages'][0] && $last_message_result['messages'][0]['date'] > time() - 60 * 60 * 24 * 30) {
                         $source = new Source(
-                            null,
-                            $user['id'],
-                            $user['username'],
-                            $user['title'],
-                            null,
-                            true,
-                            0.00,
-                            date('Y-m-d H:i:s'),
-                            date('Y-m-d H:i:s')
+                            tg_id: $user['id'],
+                            username: $user['username'],
+                            title: $user['title'],
+                            is_active: true,
+                            createdAt: ApplicationDateTime::toDb(ApplicationDateTime::now()),
+                            updatedAt: ApplicationDateTime::toDb(ApplicationDateTime::now()),
                         );
 
                         $repo->save($source);

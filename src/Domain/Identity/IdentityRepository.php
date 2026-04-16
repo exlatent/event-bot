@@ -31,7 +31,4 @@ final class IdentityRepository implements IdentityRepositoryInterface
         /** @var IdentityInterface|null */
         return $this->repository->findOne(['username' => $username]);
     }
-
-
-
 }

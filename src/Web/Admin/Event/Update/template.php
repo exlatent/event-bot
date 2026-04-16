@@ -8,6 +8,7 @@
 
 
 use App\Domain\Event\Event;
+use App\Shared\ApplicationDateTime;
 use Yiisoft\Html\Html;
 
 ?>
@@ -36,7 +37,7 @@ use Yiisoft\Html\Html;
         </div>
         <div class="form-group mb-3 w-50">
             <label for="datetime" class="form-label">Date and Time</label>
-            <?= Html::textInput('UpdateForm[datetime]', $model->datetime, [
+            <?= Html::textInput('UpdateForm[datetime]', ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->datetime))->format('Y-m-d\TH:i'), [
                 'type'  => 'datetime-local',
                 'class' => 'form-control',
             ]) ?>

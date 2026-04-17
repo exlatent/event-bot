@@ -18,6 +18,7 @@ final class M260417080653AlterTimestampColumns implements RevertibleMigrationInt
         $b->alterColumn('event', 'lastCheckedAt', 'datetime');
 
         // Message
+        $b->alterColumn('message', 'date', 'datetime NOT NULL');
         $b->alterColumn('message', 'createdAt', 'datetime NOT NULL');
         $b->alterColumn('message', 'analyzedAt', 'datetime');
         $b->alterColumn('message', 'processedAt', 'datetime');
@@ -43,6 +44,7 @@ final class M260417080653AlterTimestampColumns implements RevertibleMigrationInt
 
         // Message
         $b->alterColumn('message', 'createdAt', 'timestamp NOT NULL');
+        $b->alterColumn('message', 'date', 'timestamp NOT NULL');
         $b->alterColumn('message', 'analyzedAt', 'timestamp');
         $b->alterColumn('message', 'processedAt', 'timestamp');
 

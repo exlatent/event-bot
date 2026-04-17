@@ -11,6 +11,7 @@ use App\Domain\Telegram\Repository\MessageRepository;
 use App\Domain\Telegram\Repository\SourceRepository;
 use App\Infrastructure\AbstractEntity;
 use App\Infrastructure\AbstractRepository;
+use App\Shared\ApplicationDateTime;
 use Yiisoft\Db\Query\Query;
 
 class EventRepository extends AbstractRepository
@@ -42,11 +43,14 @@ class EventRepository extends AbstractRepository
 
     public function findNextNotDeduplicated(int $minutes_interval): AbstractEntity|Event|null
     {
+        $now = ApplicationDateTime::now();
+        $check_date = $now->modify(-$minutes_interval . ' minutes');
+
         $row = (new Query($this->connection))
             ->from(self::tableName())
-            ->where(['>', 'datetime', date('Y-m-d H:i:s')])
+            ->where(['>', 'datetime', $now->format('Y-m-d H:i:s')])
             ->andWhere(['duplicate_of_id' => null])
-            ->andWhere(['<', 'lastCheckedAt', date('Y-m-d H:i:s', time() - $minutes_interval * 60)])
+            ->andWhere(['<', 'lastCheckedAt', $check_date->format('Y-m-d H:i:s')])
             ->orWhere(['lastCheckedAt' => null])
             ->orderBy('id')
             ->limit(1)

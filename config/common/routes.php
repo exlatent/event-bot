@@ -9,7 +9,7 @@ use Yiisoft\Router\Group;
 use Yiisoft\Router\Route;
 
 return [
-//    Route::get('/')->action(Web\HomePage\Action::class)->name('home'),
+    Route::get('/')->action(Web\HomePage\Action::class)->name('home'),
     Group::create('/telegram')
         ->routes(
             Route::post('/webhook')->action(Web\Telegram\Webhook\Action::class)->name('telegram:webhook')

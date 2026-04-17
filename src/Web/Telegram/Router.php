@@ -10,12 +10,11 @@ use App\Web\Telegram\Command\StartCommand;
 use Psr\Log\LoggerInterface;
 use Yiisoft\Json\Json;
 
-final class Router
+final readonly class Router
 {
     public function __construct(
         private StartCommand $startCommand,
         private DigestCallback $digestCallback,
-        private LoggerInterface $logger
     ) {
     }
 
@@ -44,5 +43,4 @@ final class Router
             $this->digestCallback->handle($callback);
         }
     }
-
 }

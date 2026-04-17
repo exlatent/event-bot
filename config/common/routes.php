@@ -26,7 +26,7 @@ return [
 
 
     Group::create('/admin')
-        ->middleware(CheckAccess::definition(AdminPanelPermission::PERM_NAME))
+//        ->middleware(CheckAccess::definition(AdminPanelPermission::PERM_NAME))
         ->routes(
             Group::create('/source')
                 ->routes(

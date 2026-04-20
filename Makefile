@@ -21,6 +21,7 @@ endif
 export COMPOSE_PROJECT_NAME=${STACK_NAME}
 DOCKER_COMPOSE_DEV := docker compose -f docker/compose.yml -f docker/dev/compose.yml
 DOCKER_COMPOSE_TEST := docker compose -f docker/compose.yml -f docker/test/compose.yml
+DOCKER_COMPOSE_PROD := docker compose -f docker/compose.yml -f docker/prod/compose.yml
 
 #
 # Development
@@ -123,6 +124,16 @@ endif
 ifeq ($(PRIMARY_GOAL),prod-deploy)
 prod-deploy: ## PROD | Deploy to production
 	docker -H ${PROD_SSH} stack deploy --prune --detach=false --with-registry-auth -c docker/compose.yml -c docker/prod/compose.yml ${STACK_NAME}
+endif
+
+ifeq ($(PRIMARY_GOAL),prod-up)
+prod-up:
+	$(DOCKER_COMPOSE_PROD) up -d --build
+endif
+
+ifeq ($(PRIMARY_GOAL),prod-down)
+prod-down:
+	$(DOCKER_COMPOSE_PROD) down
 endif
 
 #

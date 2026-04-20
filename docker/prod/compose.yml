@@ -26,8 +26,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
       MYSQL_DATABASE: ${DB_NAME:-app}
-      MYSQL_USER: ${DB_USER:-app}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-app}
 
     volumes:
       - db:/var/lib/mysql

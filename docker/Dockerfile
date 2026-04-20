@@ -25,28 +25,24 @@ RUN install-php-extensions \
 #
 
 FROM base AS dev
-ARG USER_ID=10001
-ARG GROUP_ID=10001
+
+ARG USER_ID=1000
+ARG GROUP_ID=1000
 ARG USER_NAME=appuser
 ARG GROUP_NAME=appuser
 
-RUN install-php-extensions \
-    xdebug
+RUN install-php-extensions xdebug
 
 COPY docker/dev/xdebug.ini /usr/local/etc/php/conf.d/99-xdebug.ini
 
 COPY --from=composer /composer /usr/bin/composer
 
-# Based on https://frankenphp.dev/docs/docker/#running-as-a-non-root-user
-RUN \
-	groupadd --gid ${GROUP_ID} ${GROUP_NAME}; \
-    useradd --gid ${GROUP_ID} --uid ${USER_ID} ${GROUP_NAME}; \
-	# Add additional capability to bind to port 80 and 443 \
-	setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp; \
-	# Give write access to /data/caddy and /config/caddy \
-	chown -R ${USER_NAME}:${GROUP_NAME} /data/caddy && chown -R ${USER_NAME}:${GROUP_NAME} /config/caddy
-USER ${USER_NAME}
+RUN groupadd --gid ${GROUP_ID} ${GROUP_NAME} && \
+    useradd --gid ${GROUP_ID} --uid ${USER_ID} -m ${GROUP_NAME} && \
+    setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp && \
+    chown -R ${USER_NAME}:${GROUP_NAME} /data/caddy /config/caddy
 
+USER ${USER_NAME}
 #
 # Production
 #
@@ -61,4 +57,10 @@ RUN --mount=type=cache,target=/tmp/cache \
 FROM base AS prod
 ENV APP_ENV=prod
 COPY --from=prod-builder --chown=www-data:www-data /app /app
+RUN mkdir -p /data/caddy /config/caddy && \
+    chown -R www-data:www-data /data /config && \
+    chmod -R 755 /data /config && \
+    find /data/caddy /config/caddy -type d -exec chmod 700 {} \; && \
+    find /data/caddy /config/caddy -type f -exec chmod 600 {} \;
+
 USER www-data

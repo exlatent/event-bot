@@ -13,6 +13,8 @@ services:
 
     volumes:
       - runtime:/app/runtime
+      - caddy_data:/data
+      - caddy_config:/config
 
     depends_on:
       - db
@@ -32,4 +34,6 @@ services:
 
 volumes:
   runtime:
+  caddy_data:
+  caddy_config:
   db:

@@ -11,8 +11,8 @@ include docker/.env
 
 # Current user ID and group ID except MacOS where it conflicts with Docker abilities
 ifeq ($(shell uname), Darwin)
-    export UID=1000
-    export GID=1000
+    export UID=10001
+    export GID=10001
 else
     export UID=$(shell id -u)
     export GID=$(shell id -g)

@@ -2,7 +2,7 @@
 *
 
 # except:
-
+!/assets
 !/config
 !/public
 !/src

@@ -9,7 +9,6 @@ services:
     env_file:
       - path: ./prod/.env
       - path: ./prod/override.env
-        required: false
 
     volumes:
       - runtime:/app/runtime

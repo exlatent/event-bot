@@ -1,6 +1,6 @@
 services:
   app:
-    image: ${IMAGE}:${IMAGE_TAG}
+    build: .
     restart: unless-stopped
 
     ports:
@@ -12,8 +12,8 @@ services:
         required: false
 
     volumes:
-      - .:/app
-      - runtime:/app/runtime
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+      - ./:/app:delegated
       - caddy_data:/data
       - caddy_config:/config
 

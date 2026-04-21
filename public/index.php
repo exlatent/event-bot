@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-
 use App\Environment;
 use Psr\Log\LogLevel;
 use Yiisoft\ErrorHandler\ErrorHandler;
@@ -14,8 +11,6 @@ use Yiisoft\Log\Target\File\FileTarget;
 use Yiisoft\Yii\Runner\Http\HttpApplicationRunner;
 
 $root = dirname(__DIR__);
-
-
 
 require_once $root . '/src/autoload.php';
 

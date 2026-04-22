@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Api\Telegram;
 
 use danog\MadelineProto\API;
+use danog\MadelineProto\Logger as MadelineProtoLogger;
 use danog\MadelineProto\Settings;
 use danog\MadelineProto\Settings\AppInfo;
+use danog\MadelineProto\Settings\Logger;
 
 final class TelegramClient
 {
@@ -20,6 +22,10 @@ final class TelegramClient
         // Настройки API, без запуска start()
         $settings = new Settings();
         $appInfo = new AppInfo();
+        $logger = new Logger();
+        $logger->setType(2);
+        $logger->setExtra('runtime/logs/madeline.log');
+        $settings->setLogger($logger);
         $appInfo->setApiId($this->apiId);
         $appInfo->setApiHash($this->apiHash);
         $settings->setAppInfo($appInfo);

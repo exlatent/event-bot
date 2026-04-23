@@ -13,19 +13,16 @@ use Telegram\Bot\Api;
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Json\Json;
 
-final class DigestCallback
+final readonly class DigestCallback
 {
     public function __construct(
         private Api $bot,
-        private ConnectionInterface $connection,
         private EventRepository $repository
-    ) {
-        $this->repository = new EventRepository($this->connection);
-    }
+    ) {}
 
     public function handle(array $callback): void
     {
-        $data = Json::decode($callback['data']) ?? [];
+        $data = Json::decode($callback['data']['data']) ?? [];
 
         if (!isset($data['period'])) {
             return;
@@ -33,7 +30,7 @@ final class DigestCallback
 
         $events = $this->getData($data['period']);
 
-        $chatId = $callback['message']['chat']['id'];
+        $chatId = $callback['chat_id'];
 
         if (empty($events)) {
             $this->bot->sendMessage([

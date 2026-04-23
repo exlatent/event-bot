@@ -5,37 +5,46 @@ declare(strict_types=1);
 
 namespace App\Web\Telegram;
 
-use App\Domain\User\Repository\UserRepository;
-use danog\MadelineProto\Namespace\Users;
 use Psr\Log\LoggerInterface;
 use Telegram\Bot\Api;
-use Yiisoft\Json\Json;
-use Yiisoft\Log\Logger;
 
-final class Handler
+final readonly class Handler
 {
     public function __construct(
         private Router $router,
         private UserHandler $userHandler,
         private Api $bot,
+        private LoggerInterface $logger
     ) {}
+
+    const string TYPE_MESSAGE = 'message';
+    const string TYPE_CALLBACK = 'callback';
 
     public function handle(array $update): void
     {
-        $this->userHandler->sync($update);
+        try {
+            $data = $update['payload'] ?? null;
+            $user = $data['user'] ?? null;
 
-        if (isset($update['message'])) {
-            $this->router->handleMessage($update['message']);
-        }
-
-        if (isset($update['callback_query'])) {
-            if(isset($update['callback_query']['message'])) {
-                $this->bot->deleteMessage([
-                    'chat_id' => $update['callback_query']['message']['chat']['id'],
-                    'message_id' => $update['callback_query']['message']['message_id'],
-                ]);
+            if(!$data) {exit();}
+            if($user) {
+                $this->userHandler->sync($user, $data['data']['status'] ?? null);
             }
-            $this->router->handleCallback($update['callback_query']);
+            if ($data['type'] === self::TYPE_MESSAGE) {
+                $this->router->handleMessage($data);
+            }
+
+            if ($data['type'] === self::TYPE_CALLBACK) {
+                if(isset($data['message_id'])) {
+                    $this->bot->deleteMessage([
+                        'chat_id' => $data['chat_id'],
+                        'message_id' => $data['message_id'],
+                    ]);
+                }
+                $this->router->handleCallback($data);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error($e->getMessage());
         }
     }
 }

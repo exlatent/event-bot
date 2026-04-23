@@ -23,7 +23,7 @@ final class StartCommand
 
     public function handle(array $message): void
     {
-        $chatId = $message['chat']['id'];
+        $chatId = $message['chat_id'];
 
         $this->bot->sendMessage([
             'chat_id'      => $chatId,

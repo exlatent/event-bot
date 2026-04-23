@@ -9,6 +9,7 @@ use Yiisoft\Router\Group;
 use Yiisoft\Router\Route;
 
 return [
+    Route::get('/test')->action(Web\Test\Action::class)->name('test'),
     Route::get('/')->action(Web\HomePage\Action::class)->name('home'),
     Group::create('/telegram')
         ->routes(
@@ -26,7 +27,7 @@ return [
 
 
     Group::create('/admin')
-//        ->middleware(CheckAccess::definition(AdminPanelPermission::PERM_NAME))
+        ->middleware(CheckAccess::definition(AdminPanelPermission::PERM_NAME))
         ->routes(
             Group::create('/source')
                 ->routes(

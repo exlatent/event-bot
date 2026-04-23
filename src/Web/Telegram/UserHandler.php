@@ -22,7 +22,7 @@ final class UserHandler
      * @param $update
      * @return void
      */
-    public function extractUser($update): void
+    public function extractUser($data): void
     {
         if (isset($update['message']['from'])) {
             $this->user = $update['message']['from'];
@@ -37,35 +37,32 @@ final class UserHandler
         }
     }
 
-    public function sync($update): void
+    public function sync($data, $new_status = null): void
     {
-        $this->extractUser($update);
-        if(!$this->user) {
+        if(!$data) {
             exit();
         }
+
         $now = ApplicationDateTime::toDb(ApplicationDateTime::now());
-        $user = $this->users->findOne(['tg_id' => $this->user['id']]);
+        $user = $this->users->findOne(['tg_id' => $data['id']]);
         if (!$user) {
             $user = new TelegramUser(
-                tg_id: $this->user['id'],
-                username: $this->user['username'] ?? null,
-                first_name: $this->user['first_name'] ?? null,
-                last_name: $this->user['last_name'] ?? null,
-                language_code: $this->user['language_code'] ?? null,
+                tg_id: $data['id'],
+                username: $data['username'] ?? null,
+                first_name: $data['first_name'] ?? null,
+                last_name: $data['last_name'] ?? null,
+                language_code: $data['language_code'] ?? null,
                 status: TelegramUser::STATUS_ACTIVE,
                 createdAt: $now,
                 updatedAt: $now,
                 lastActivity: $now
             );
         } else {
-            $user->username = $this->user['username'] ?? null;
+            $user->username = $data['username'] ?? null;
             $user->lastActivity = $now;
             $user->status = TelegramUser::STATUS_ACTIVE;
 
-            $kicked = isset($update['my_chat_member']['new_chat_member']['status'])
-                && $update['my_chat_member']['new_chat_member']['status'] === 'kicked';
-
-            if($kicked) {
+            if($new_status === 'kicked') {
                 $user->status = TelegramUser::STATUS_INACTIVE;
             }
         }

@@ -49,8 +49,11 @@ final class DeduplicateCommand extends Command
                 if (!empty($duplicates)) {
                     foreach ($duplicates as $duplicate_event_id) {
                         if($duplicate_event = $repo->findOne(['id' => $duplicate_event_id])) {
-                            $duplicate_event->duplicate_of_id = $event->id;
-                            $repo->save($duplicate_event);
+                            if($duplicate_event->duplicate_of_id === null){
+                                $duplicate_event->duplicate_of_id = $event->id;
+                                $repo->save($duplicate_event);
+                            }
+
                             $count_duplicates++;
                         }
                     }

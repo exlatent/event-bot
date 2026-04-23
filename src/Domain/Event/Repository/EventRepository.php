@@ -50,9 +50,12 @@ class EventRepository extends AbstractRepository
             ->from(self::tableName())
             ->where(['>', 'datetime', $now->format('Y-m-d H:i:s')])
             ->andWhere(['duplicate_of_id' => null])
-            ->andWhere(['<', 'lastCheckedAt', $check_date->format('Y-m-d H:i:s')])
-            ->orWhere(['lastCheckedAt' => null])
-            ->orderBy('id')
+            ->andWhere([
+                'or',
+                ['<', 'lastCheckedAt', $check_date->format('Y-m-d H:i:s')],
+                ['lastCheckedAt' => null],
+            ])
+            ->orderBy(['datetime' => SORT_DESC, 'id' => SORT_ASC])
             ->limit(1)
             ->one();
 
@@ -64,7 +67,9 @@ class EventRepository extends AbstractRepository
         $query =  new Query($this->connection)
             ->from(self::tableName())
             ->where(['between', 'datetime', $from, $to])
-            ->andWhere(['state' => Event::STATE_PUBLISHED])
+            ->andWhere([
+                'state' => Event::STATE_PUBLISHED,
+            ])
             ->orderBy('datetime');
 
         $rows = $query->all();

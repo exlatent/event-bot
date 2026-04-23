@@ -19,6 +19,7 @@ return [
             'telegramBotToken' => $params['telegram_bot']['token'],
 
             'openaiApiKey' => $params['open_ai']['apiKey'],
+            'redisParams' => $params['redis']['params'],
         ],
     ],
 ];

@@ -23,6 +23,10 @@ return [
 
     'open_ai' => require __DIR__ . '/open_ai.php',
 
+    'queue' => require __DIR__ . '/queue.php',
+
+    'redis' => require __DIR__ . '/redis.php',
+
     'yiisoft/view' => [
         'basePath' => null,
         'parameters' => [

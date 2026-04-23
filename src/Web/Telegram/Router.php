@@ -18,12 +18,12 @@ final readonly class Router
     ) {
     }
 
-    public function handleMessage(array $message): void
+    public function handleMessage(array $data): void
     {
-        $text = $message['text'] ?? '';
+        $text = $data['data']['text'] ?? '';
 
         if ($text === '/start') {
-            $this->startCommand->handle($message);
+            $this->startCommand->handle($data);
         }
 
 //        if ($text === '/help') {
@@ -36,7 +36,7 @@ final readonly class Router
 
     public function handleCallback(array $callback): void
     {
-        $data = Json::decode($callback['data']) ?? [];
+        $data = Json::decode($callback['data']['data']) ?? [];
         $action = $data['action'] ?? '';
 
         if ($action === 'digest') {

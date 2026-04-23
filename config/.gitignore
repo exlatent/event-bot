@@ -1,5 +1,6 @@
 .merge-plan.php
 /common/db.php
+/common/redis.php
 /common/open_ai.php
 /common/telegram.php
 /common/telegram_bot.php

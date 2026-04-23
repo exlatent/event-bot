@@ -52,6 +52,27 @@ readonly class RedisAdapter implements AdapterInterface
 
     public function subscribe(callable $handlerCallback): void
     {
-        // TODO: Implement subscribe() method.
+        while (true) {
+            $raw = $this->client->brpop([$this->channel], 0);
+
+            if (!$raw) {
+                continue;
+            }
+
+            $data = json_decode($raw[1], true);
+
+            $message = new Message(
+                $data['handler'],
+                $data['data']
+            );
+
+            $handler = $this->container->get($data['handler']);
+
+            try {
+                $handler($message);
+            } catch (\Throwable $e) {
+                error_log($e->getMessage());
+            }
+        }
     }
 }

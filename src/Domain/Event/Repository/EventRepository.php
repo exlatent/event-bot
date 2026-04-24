@@ -69,6 +69,7 @@ class EventRepository extends AbstractRepository
             ->where(['between', 'datetime', $from, $to])
             ->andWhere([
                 'state' => Event::STATE_PUBLISHED,
+                'duplicate_of_id' => null,
             ])
             ->orderBy('datetime');
 

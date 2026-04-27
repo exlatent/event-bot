@@ -6,6 +6,7 @@ declare(strict_types=1);
 namespace App\Web\Telegram\Widget;
 
 use App\Web\Telegram\Period;
+use App\Web\Telegram\Settings;
 use Yiisoft\Json\Json;
 use Telegram\Bot\Keyboard\Keyboard;
 
@@ -15,7 +16,7 @@ class KeyboardWidget
     {
         $keyboard = Keyboard::make()->inline();
         $nav_row = [];
-        if($page > 1) {
+        if ($page > 1) {
             $nav_row[] = Keyboard::inlineButton([
                 'text'          => '⬅️  Назад',
                 'callback_data' => Json::encode([
@@ -36,7 +37,7 @@ class KeyboardWidget
             ]);
         }
 
-        if(!empty($nav_row)) {
+        if (!empty($nav_row)) {
             $keyboard->row($nav_row);
         }
 
@@ -72,6 +73,12 @@ class KeyboardWidget
                         'period' => Period::HOLIDAYS
                     ])
                 ]),
+            ])
+            ->row([
+                Keyboard::inlineButton([
+                    'text'          => '💬 Обратная связь',
+                    'url' => 'https://t.me/' . Settings::ADMIN_USERNAME
+                ])
             ]);
 
         return $keyboard;

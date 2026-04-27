@@ -35,12 +35,7 @@ final readonly class Handler
             }
 
             if ($data['type'] === self::TYPE_CALLBACK) {
-                if(isset($data['message_id'])) {
-                    $this->bot->deleteMessage([
-                        'chat_id' => $data['chat_id'],
-                        'message_id' => $data['message_id'],
-                    ]);
-                }
+                $this->bot->answerCallbackQuery(['callback_query_id' => $data['id'] ?? 0 ]);
                 $this->router->handleCallback($data);
             }
         } catch (\Throwable $e) {

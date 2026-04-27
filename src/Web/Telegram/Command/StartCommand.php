@@ -5,19 +5,20 @@ declare(strict_types=1);
 
 namespace App\Web\Telegram\Command;
 
+use App\Web\Telegram\DialogState;
+use App\Web\Telegram\Widget\KeyboardWidget;
+use Predis\Client;
+use Psr\Log\LoggerInterface;
 use Telegram\Bot\Api;
-use Telegram\Bot\Keyboard\Keyboard;
 use Yiisoft\Json\Json;
 
 final class StartCommand
 {
-    public const int TODAY = 1;
-    public const int TOMORROW = 2;
-    public const int CURRENT_WEEK = 3;
-    public const int NEXT_WEEK = 4;
 
     public function __construct(
-        private Api $bot
+        private readonly Api $bot,
+        private readonly Client $redis,
+        private LoggerInterface $logger
     ) {
     }
 
@@ -25,44 +26,29 @@ final class StartCommand
     {
         $chatId = $message['chat_id'];
 
-        $this->bot->sendMessage([
+        $this->bot->deleteMessage([
+            'message_id' => $message['message_id'],
+            'chat_id'    => $chatId,
+        ]);
+
+        $key = 'user:' . $chatId . ':message';
+        $menu_message = [
             'chat_id'      => $chatId,
             'text'         => 'Привет! 👋 Нажми на кнопку и получи список событий',
-            'reply_markup' =>
-                Keyboard::make()
-                    ->inline()
-                    ->row([
-                        Keyboard::inlineButton([
-                            'text'          => 'Сегодня',
-                            'callback_data' => Json::encode([
-                                'action' => 'digest',
-                                'period' => self::TODAY
-                            ])
-                        ]),
-                        Keyboard::inlineButton([
-                            'text'          => 'Завтра',
-                            'callback_data' => Json::encode([
-                                'action' => 'digest',
-                                'period' => self::TOMORROW
-                            ])
-                        ])
-                    ])
-                    ->row([
-                        Keyboard::inlineButton([
-                            'text'          => 'На этой неделе',
-                            'callback_data' => Json::encode([
-                                'action' => 'digest',
-                                'period' => self::CURRENT_WEEK
-                            ])
-                        ]),
-                        Keyboard::inlineButton([
-                            'text'          => 'На следующей неделе',
-                            'callback_data' => Json::encode([
-                                'action' => 'digest',
-                                'period' => self::NEXT_WEEK
-                            ])
-                        ]),
-                    ])
-        ]);
+            'reply_markup' => KeyboardWidget::render()
+        ];
+        if (!$this->redis->exists($key)) {
+            $value = json_decode($this->redis->get($key));
+            $menu_message['message_id'] = $value->message_id;
+            $this->bot->editMessageText($menu_message);
+        } else {
+            $new_message = $this->bot->sendMessage($menu_message);
+
+            $this->redis->set($key, Json::encode([
+                'message_id' => $new_message['message_id'],
+                'chat_id'    => $chatId,
+                'state'      => DialogState::START_MENU
+            ]));
+        }
     }
 }

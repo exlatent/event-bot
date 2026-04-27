@@ -7,8 +7,8 @@ namespace App\Shared;
 
 final class ApplicationDateTime
 {
-    private const STORAGE_TZ = 'UTC';
-    private const DEFAULT_INPUT_TZ = 'Asia/Tbilisi';
+    public const STORAGE_TZ = 'UTC';
+    public const DEFAULT_INPUT_TZ = 'Asia/Tbilisi';
 
     public static function now(): \DateTimeImmutable
     {

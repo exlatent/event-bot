@@ -75,11 +75,12 @@ final readonly class Action
             $msg = $update['message'];
 
             return [
-                'update_id' => $update['update_id'],
-                'type'      => 'message',
-                'chat_id'   => $msg['chat']['id'] ?? null,
-                'user'      => $msg['from'] ?? null,
-                'data'      => [
+                'update_id'  => $update['update_id'],
+                'message_id' => $msg['message_id'] ?? null,
+                'type'       => 'message',
+                'chat_id'    => $msg['chat']['id'] ?? null,
+                'user'       => $msg['from'] ?? null,
+                'data'       => [
                     'text' => $msg['text'] ?? null,
                 ],
             ];
@@ -91,6 +92,7 @@ final readonly class Action
             return [
                 'update_id'  => $update['update_id'],
                 'type'       => 'callback',
+                'id'         => $cb['id'] ?? null,
                 'chat_id'    => $cb['message']['chat']['id'] ?? null,
                 'message_id' => $cb['message']['message_id'] ?? null,
                 'user'       => $cb['from'] ?? null,

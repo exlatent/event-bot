@@ -8,7 +8,13 @@ use App\Domain\Event\Event;
 use App\Domain\Event\Repository\EventRepository;
 use App\Shared\ApplicationDateTime;
 use App\Web\Telegram\Command\StartCommand;
+use App\Web\Telegram\DialogState;
+use App\Web\Telegram\Period;
+use App\Web\Telegram\Settings;
+use App\Web\Telegram\Widget\KeyboardWidget;
 use DateTimeZone;
+use Predis\Client;
+use Psr\Log\LoggerInterface;
 use Telegram\Bot\Api;
 use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Json\Json;
@@ -17,172 +23,160 @@ final readonly class DigestCallback
 {
     public function __construct(
         private Api $bot,
-        private EventRepository $repository
-    ) {}
+        private EventRepository $repository,
+        private Client $redis,
+        private LoggerInterface $logger
+    ) {
+    }
 
     public function handle(array $callback): void
     {
+        $chatId = $callback['chat_id'];
+        $key = 'user:' . $chatId . ':message';
+        if (!$this->redis->exists($key)) {
+            return;
+        }
+        $redis_message = json_decode($this->redis->get($key));
+        $message_id = $redis_message->message_id;
         $data = Json::decode($callback['data']['data']) ?? [];
+        $page = max(1, (int)($data['page'] ?? 1));
+        $max = Settings::EVENTS_MAX_PER_PAGE;
 
         if (!isset($data['period'])) {
             return;
         }
 
-        $events = $this->getData($data['period']);
-
-        $chatId = $callback['chat_id'];
-
+        $events = $this->getData($data['period'], $page);
+        $hasNext = count($events) ===  $max + 1;
         if (empty($events)) {
-            $this->bot->sendMessage([
-                'chat_id' => $chatId,
-                'text'    => 'События не найдены, попробуйте изменить условия поиска.',
+            if ($redis_message->state !== DialogState::EMPTY_RESULT) {
+                $redis_message->state = DialogState::EMPTY_RESULT;
+                $this->bot->editMessageText([
+                    'chat_id'      => $chatId,
+                    'reply_markup' => KeyboardWidget::render(),
+                    'message_id'   => $message_id,
+                    'text'         => 'События не найдены, попробуйте изменить условия поиска.',
+                ]);
+            }
+        } else {
+            unset($events[$max]);
+            $message = $this->renderMessage($events, $data['period'], $page);
+            $this->send($chatId, $message_id, $message, $data['period'], $page, $hasNext);
+            $redis_message->state = 'digest';
+        }
+        $this->redis->del($key);
+        $this->redis->set($key, Json::encode($redis_message));
+    }
+
+    private function send(int|string $chat_id, int|string $message_id, string $message, int $period, int $page, bool $hasNext): void
+    {
+        try {
+            $this->bot->editMessageText([
+                'chat_id'                  => $chat_id,
+                'message_id'               => $message_id,
+                'text'                     => $message,
+                'reply_markup'             => KeyboardWidget::render($period, $page, $hasNext),
+                'parse_mode'               => 'HTML',
+                'disable_web_page_preview' => true,
             ]);
-            return;
-        }
-
-        if ($this->isDaily($data['period'])) {
-            $message = $this->renderDailyMessage($events, $data['period']);
-
-            $this->send($chatId, $message);
-            return;
-        }
-
-        if ($this->isWeekly($data['period'])) {
-            foreach ($this->renderWeeklyMessages($events, $data['period']) as $message) {
-                $this->send($chatId, $message);
+        } catch (\Throwable $e) {
+            if (str_contains($e->getMessage(), 'message is not modified')) {
+                return;
             }
         }
     }
 
-    private function send(int|string $chatId, string $message): void
-    {
-        $this->bot->sendMessage([
-            'chat_id'                  => $chatId,
-            'text'                     => $message,
-            'parse_mode'               => 'HTML',
-            'disable_web_page_preview' => true,
-        ]);
-    }
-
-    private function isDaily(int $period): bool
-    {
-        return in_array($period, [
-            StartCommand::TODAY,
-            StartCommand::TOMORROW,
-        ], true);
-    }
-
-    private function isWeekly(int $period): bool
-    {
-        return in_array($period, [
-            StartCommand::CURRENT_WEEK,
-            StartCommand::NEXT_WEEK,
-        ], true);
-    }
-
-    private function getData(mixed $period): array
+    private function getData(mixed $period, $page): array
     {
         $from = '';
         $to = '';
         $now = ApplicationDateTime::nowLocal();
 
         switch ($period) {
-            case StartCommand::TODAY:
+            case Period::TODAY:
                 $from = $now->setTime(0, 0);
                 $to = $now->setTime(23, 59, 59);
                 break;
 
-            case StartCommand::TOMORROW:
+            case Period::TOMORROW:
                 $tomorrow = $now->modify('+1 day');
                 $from = $tomorrow->setTime(0, 0);
                 $to = $tomorrow->setTime(23, 59, 59);
                 break;
 
-            case StartCommand::CURRENT_WEEK:
+            case Period::CURRENT_WEEK:
                 $from = $now->setTime(0, 0);
                 $to = $now->modify('sunday this week')->setTime(23, 59, 59);
                 break;
 
-            case StartCommand::NEXT_WEEK:
-                $from = $now->modify('monday next week')->setTime(0, 0);
-                $to = $now->modify('sunday next week')->setTime(23, 59, 59);
+            case Period::HOLIDAYS:
+                $from = $now->modify('saturday this week')->setTime(0, 0);
+                $to = $now->modify('sunday this week')->setTime(23, 59, 59);
                 break;
         }
 
         $fromUtc = $from->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
         $toUtc = $to->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
 
-        return $this->repository->findDigestEvents($fromUtc, $toUtc);
+        return $this->repository->findDigestEvents($fromUtc, $toUtc, $page, Settings::EVENTS_MAX_PER_PAGE);
     }
 
     /**
      * DAILY
      */
-    private function renderDailyMessage(array $data, int $period): string
+    private function renderMessage(array $data, int $period, int $page): string
     {
-        $formatter = new \IntlDateFormatter('ru_RU', pattern: 'd MMMM');
+        $formatter = new \IntlDateFormatter(
+            'ru_RU',
+            timezone: ApplicationDateTime::DEFAULT_INPUT_TZ,
+            pattern: 'd MMMM');
 
         $title = match ($period) {
-            StartCommand::TODAY => "🔥 События сегодня (" . $formatter->format(time()) . ")",
-            StartCommand::TOMORROW => "🗓 События завтра (" . $formatter->format(strtotime('+1 day')) . ")",
-            default => "События",
+            Period::TODAY => "🔥 События сегодня (" . $formatter->format(time()) . ")",
+            Period::TOMORROW => "🗓 События завтра (" . $formatter->format(strtotime('+1 day')) . ")",
+
+            Period::HOLIDAYS => "🎉 События на выходных ("
+                . $formatter->format(strtotime('saturday this week')) . " – "
+                . $formatter->format(strtotime('sunday this week')) . ")",
+
+            Period::CURRENT_WEEK => "📅 События на этой неделе ("
+                . $formatter->format(strtotime('monday this week')) . " – "
+                . $formatter->format(strtotime('sunday this week')) . ")",
         };
 
         $message = "📌 <b>{$title}</b>\n\n";
 
         foreach ($data as $i => $event) {
-            $message .= $this->formatEvent($event, $i + 1);
+            $index = $i + 1 + ($page - 1) * Settings::EVENTS_MAX_PER_PAGE;
+            $message .= $this->formatEvent($event, $index, $period);
         }
+
 
         return $message;
     }
 
-    /**
-     * WEEKLY → массив сообщений (по дням)
-     */
-    private function renderWeeklyMessages(array $data, int $period): array
-    {
-        $formatter = new \IntlDateFormatter('ru_RU', pattern: 'd MMMM');
 
-        $grouped = [];
-
-        foreach ($data as $event) {
-            $key = date('Y-m-d', strtotime($event->datetime));
-            $grouped[$key][] = $event;
-        }
-
-        $messages = [];
-
-        foreach ($grouped as $date => $events) {
-            $timestamp = strtotime($date);
-
-            $message = "🔸 <b>" . mb_convert_case(
-                    $formatter->format($timestamp),
-                    MB_CASE_TITLE,
-                    "UTF-8"
-                ) . "</b>\n\n";
-
-            foreach ($events as $i => $event) {
-                $message .= $this->formatEvent($event, $i + 1);
-            }
-
-            $messages[] = $message;
-        }
-
-        return $messages;
-    }
 
     /**
      * EVENT FORMAT
      */
-    private function formatEvent(Event $event, int $index): string
+    private function formatEvent(Event $event, int $index, int $period): string
     {
+        $formatter = new \IntlDateFormatter(
+            locale: 'ru_RU',
+            timezone: ApplicationDateTime::DEFAULT_INPUT_TZ,
+            pattern: 'EEE, d MMMM HH:mm');
+        $datetime = ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($event->datetime));
+        $datetime_formatted  = in_array($period, [Period::TODAY, Period::TOMORROW])
+            ? $datetime->format('H:i')
+            : $formatter->format($datetime);
+
         $text = sprintf(
             "%d. <b>%s</b>\n📍 <i>%s</i>\n🕒 <u>%s</u>\n💰 <i>%s</i>\n",
             $index,
             $this->e($event->title),
             $this->e($event->location),
-            ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($event->datetime))->format('H:i'),
+            $datetime_formatted,
             $this->e($event->price)
         );
 

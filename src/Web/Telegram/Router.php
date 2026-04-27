@@ -8,6 +8,7 @@ namespace App\Web\Telegram;
 use App\Web\Telegram\Callbacks\DigestCallback;
 use App\Web\Telegram\Command\StartCommand;
 use Psr\Log\LoggerInterface;
+use Telegram\Bot\Api;
 use Yiisoft\Json\Json;
 
 final readonly class Router
@@ -15,6 +16,7 @@ final readonly class Router
     public function __construct(
         private StartCommand $startCommand,
         private DigestCallback $digestCallback,
+        private Api $bot
     ) {
     }
 

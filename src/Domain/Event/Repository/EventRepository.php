@@ -62,16 +62,18 @@ class EventRepository extends AbstractRepository
         return $row ? $this->fromRow($row) : null;
     }
 
-    public function findDigestEvents(string $from, string $to)
+    public function findDigestEvents(string $from, string $to, int $page = 1, int $limit = 20)
     {
-        $query =  new Query($this->connection)
+        $query = new Query($this->connection)
             ->from(self::tableName())
             ->where(['between', 'datetime', $from, $to])
             ->andWhere([
-                'state' => Event::STATE_PUBLISHED,
+                'state'           => Event::STATE_PUBLISHED,
                 'duplicate_of_id' => null,
             ])
-            ->orderBy('datetime');
+            ->orderBy('datetime')
+            ->limit($limit + 1)
+            ->offset(($page - 1) * $limit);
 
         $rows = $query->all();
 
@@ -84,7 +86,7 @@ class EventRepository extends AbstractRepository
      */
     public function getMessage(Event $event): array|null
     {
-        if(!$event->message_id) {
+        if (!$event->message_id) {
             return null;
         }
 
@@ -93,7 +95,6 @@ class EventRepository extends AbstractRepository
             ->select(['m.tg_id', 's.username'])
             ->leftJoin(['s' => SourceRepository::tableName()], 's.id = m.source_id')
             ->where(['m.id' => $event->message_id])
-            ->one()
-        ;
+            ->one();
     }
 }

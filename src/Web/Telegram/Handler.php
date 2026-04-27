@@ -39,7 +39,7 @@ final readonly class Handler
                 $this->router->handleCallback($data);
             }
         } catch (\Throwable $e) {
-            $this->logger->error($e->getTraceAsString());
+            $this->logger->error($e->getMessage());
         }
     }
 }

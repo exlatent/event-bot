@@ -37,7 +37,7 @@ final class StartCommand
             'text'         => 'Привет! 👋 Нажми на кнопку и получи список событий',
             'reply_markup' => KeyboardWidget::render()
         ];
-        if (!$this->redis->exists($key)) {
+        if ($this->redis->exists($key)) {
             $value = json_decode($this->redis->get($key));
             $menu_message['message_id'] = $value->message_id;
             $this->bot->editMessageText($menu_message);

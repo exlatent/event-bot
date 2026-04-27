@@ -43,15 +43,13 @@ final class StartCommand
             try {
                 $this->bot->editMessageText($menu_message);
             } catch (\Throwable $e) {
-                if (str_contains($e->getMessage(), 'message is not modified')) {
-                    $new_message = $this->bot->sendMessage($menu_message);
-
-                    $this->redis->set($key, Json::encode([
-                        'message_id' => $new_message['message_id'],
-                        'chat_id'    => $chatId,
-                        'state'      => DialogState::START_MENU
-                    ]));
-                }
+                $this->logger->error($e->getMessage());
+                $new_message = $this->bot->sendMessage($menu_message);
+                $this->redis->set($key, Json::encode([
+                    'message_id' => $new_message['message_id'],
+                    'chat_id'    => $chatId,
+                    'state'      => DialogState::START_MENU
+                ]));
             }
 
         } else {

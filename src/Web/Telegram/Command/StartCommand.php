@@ -40,7 +40,20 @@ final class StartCommand
         if ($this->redis->exists($key)) {
             $value = json_decode($this->redis->get($key));
             $menu_message['message_id'] = $value->message_id;
-            $this->bot->editMessageText($menu_message);
+            try {
+                $this->bot->editMessageText($menu_message);
+            } catch (\Throwable $e) {
+                if (str_contains($e->getMessage(), 'message is not modified')) {
+                    $new_message = $this->bot->sendMessage($menu_message);
+
+                    $this->redis->set($key, Json::encode([
+                        'message_id' => $new_message['message_id'],
+                        'chat_id'    => $chatId,
+                        'state'      => DialogState::START_MENU
+                    ]));
+                }
+            }
+
         } else {
             $new_message = $this->bot->sendMessage($menu_message);
 

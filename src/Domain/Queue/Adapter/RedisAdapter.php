@@ -8,9 +8,9 @@ namespace App\Domain\Queue\Adapter;
 use Predis\Client;
 use Psr\Container\ContainerInterface;
 use Yiisoft\Queue\Adapter\AdapterInterface;
-use Yiisoft\Queue\JobStatus;
 use Yiisoft\Queue\Message\Message;
 use Yiisoft\Queue\Message\MessageInterface;
+use Yiisoft\Queue\MessageStatus;
 
 readonly class RedisAdapter implements AdapterInterface
 {
@@ -32,7 +32,7 @@ readonly class RedisAdapter implements AdapterInterface
         }
     }
 
-    public function status(int|string $id): JobStatus
+    public function status(int|string $id): MessageStatus
     {
         // TODO: Implement status() method.
     }

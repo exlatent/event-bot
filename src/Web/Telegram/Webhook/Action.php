@@ -40,14 +40,13 @@ final readonly class Action
             return $this->setOk();
         }
 
-        $message = new Message(
-            handlerName: TelegramCallbackHandler::class,
-            data: [
-                'payload' => $this->normalize($update),
-            ]
-        );
-
         try {
+            $message = new Message(
+                type: TelegramCallbackHandler::class,
+                data: [
+                    'payload' => $this->normalize($update),
+                ]
+            );
             $this->queue->push($message);
             return $this->setOk();
 

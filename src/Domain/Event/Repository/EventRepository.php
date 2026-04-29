@@ -12,6 +12,7 @@ use App\Domain\Telegram\Repository\SourceRepository;
 use App\Infrastructure\AbstractEntity;
 use App\Infrastructure\AbstractRepository;
 use App\Shared\ApplicationDateTime;
+use App\Web\Admin\Event\Index\SearchForm;
 use Yiisoft\Db\Query\Query;
 
 class EventRepository extends AbstractRepository
@@ -96,5 +97,35 @@ class EventRepository extends AbstractRepository
             ->leftJoin(['s' => SourceRepository::tableName()], 's.id = m.source_id')
             ->where(['m.id' => $event->message_id])
             ->one();
+    }
+
+    public function findByFilter(SearchForm $filter)
+    {
+        $query = (new Query($this->connection))
+            ->from(self::tableName())
+            ->orderBy(['datetime' => SORT_ASC]);
+
+        if ($filter->query) {
+            $query->andWhere([
+                'or',
+                ['like', 'title', $filter->query],
+                ['like', 'location', $filter->query],
+                ['like', 'price', $filter->query],
+            ]);
+        }
+        if (is_numeric($filter->state)) {
+            $query->andWhere(['state' => $filter->state]);
+        }
+
+        if ($filter->dateFrom) {
+            $query->andWhere(['>=', 'datetime', $filter->dateFrom . ' 00:00:00']);
+        }
+
+        if ($filter->dateTo) {
+            $query->andWhere(['<=', 'datetime', $filter->dateTo . ' 23:59:59']);
+        }
+
+        $rows = $query->all();
+        return array_map(fn($row) => $this->fromRow($row), $rows);
     }
 }

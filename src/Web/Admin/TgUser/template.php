@@ -1,27 +1,17 @@
 <?php
 
+/** @var \Yiisoft\Data\Paginator\OffsetPaginator $data */
 
-/** @var Source[] $sources */
-/** @var \Yiisoft\Router\UrlGeneratorInterface $url */
-
-use App\Domain\Telegram\Source;
-use App\Shared\ApplicationDateTime;
-use Yiisoft\Yii\DataView\GridView\Column\ActionColumn;
-use Yiisoft\Yii\DataView\GridView\Column\Base\DataContext;
-use Yiisoft\Yii\DataView\GridView\Column\DataColumn;
+use App\Domain\User\TelegramUser;
 use Yiisoft\Yii\DataView\GridView\GridView;
-use Yiisoft\Data\Paginator\PaginatorInterface;
-use Yiisoft\Data\Reader\Iterable\IterableDataReader;
-use Yiisoft\Data\Paginator\OffsetPaginator;
-
+use Yiisoft\Yii\DataView\GridView\Column\DataColumn;
+use App\Shared\ApplicationDateTime;
 
 ?>
 
 <div class="container">
     <div class="d-flex justify-content-between align-items-start mb-3">
-        <h2>Sources</h2>
-        <?= \Yiisoft\Html\Html::a('+ Add', $url->generate('admin:source:create'),
-            ['class' => 'btn btn-primary d-flex align-items-center']) ?>
+        <h2>Telegram Users</h2>
     </div>
     <div class="table-responsive">
         <?= GridView::widget()
@@ -45,33 +35,32 @@ use Yiisoft\Data\Paginator\OffsetPaginator;
             ->tableClass('table table-striped table-hover table-bordered')
             ->columns(
                 new DataColumn('id'),
+                new DataColumn('tg_id'),
                 new DataColumn('username'),
-                new DataColumn('title'),
+                new DataColumn('first_name'),
+                new DataColumn('last_name'),
+                new DataColumn('language_code'),
+                new DataColumn('status'),
                 new DataColumn(
                     property: 'createdAt',
-                    content: function (Source $model) {
+                    content: function (TelegramUser $model) {
                         return ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->createdAt));
                     }
                 ),
                 new DataColumn(
                     property: 'updatedAt',
-                    content: function (Source $model) {
+                    content: function (TelegramUser $model) {
                         return ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->updatedAt));
                     }
                 ),
-                new DataColumn('is_active'),
-                new ActionColumn('{update}', null, null, null,
-                    function ($action, DataContext $context) use ($url) {
-                        return $url->generate('admin:source:update', ['id' => $context->data->id]);
+                new DataColumn(
+                    property: 'lastActivity',
+                    content: function (TelegramUser $model) {
+                        return ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->lastActivity));
                     }
-                )
+                ),
             )
         ?>
     </div>
+
 </div>
-
-
-
-
-
-

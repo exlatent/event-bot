@@ -40,37 +40,8 @@ $this->beginPage()
 <body class="d-flex flex-column h-100">
 <?php $this->beginBody() ?>
 
-<div class="d-flex justify-content-start">
-    <div class="d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary" style="width: 280px;"><a href="/"
-                                                                                                class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-            <svg class="bi pe-none me-2" width="40" height="32" aria-hidden="true">
-                <use xlink:href="#bootstrap"></use>
-            </svg>
-            <span class="fs-4">Admin panel</span> </a>
-        <hr>
-        <ul class="nav nav-pills flex-column mb-auto">
-            <li class="nav-item">
-                <a href="/admin/source" class="nav-link">
-                    Источники
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/admin/message" class="nav-link">
-                    Сообщения
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/admin/event" class="nav-link">
-                    События
-                </a>
-            </li>
-        </ul>
-    </div>
-    <div class="content pt-5 pb-5" style="width: 100%">
-        <div class="content_i">
-            <?= $content ?>
-        </div>
-    </div>
+<div class="content_i">
+    <?= $content ?>
 </div>
 
 

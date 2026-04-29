@@ -38,7 +38,7 @@ $this->beginPage()
 <body class="d-flex flex-column h-100">
 <?php $this->beginBody() ?>
 
-<div class="content">
+<div class="content pt-5">
     <div class="content_i">
         <?= $content ?>
     </div>
@@ -46,11 +46,7 @@ $this->beginPage()
 
 
 <div class="footer">
-    <div class="footer_copyright">
-        <a href="https://www.yiiframework.com/" target="_blank" rel="noopener">
-            © <?= date('Y') ?>  <?= Html::encode($applicationParams->name) ?>
-        </a>
-    </div>
+
 </div>
 
 <?php $this->endBody() ?>

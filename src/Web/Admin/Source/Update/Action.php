@@ -42,10 +42,10 @@ final readonly class Action
         /** @var Source $model */
         $form = new Form($model);
         if ($request->getMethod() === Method::POST) {
-                if ($this->formHydrator->populateFromPostAndValidate($form, $request, null, false)) {
+            if ($this->formHydrator->populateFromPostAndValidate($form, $request, null, false)) {
                 $model->username = $form->username;
                 $model->title = $form->title;
-                $model->is_active = (bool)$form->is_active;
+                $model->is_active = (bool) $form->is_active;
                 $model->updatedAt = ApplicationDateTime::toDb(ApplicationDateTime::now());
                 $repo->save($model);
 
@@ -57,7 +57,8 @@ final readonly class Action
             }
         }
 
-        return $this->viewRenderer
+        return $request
+            ->getAttribute(WebViewRenderer::class, $this->viewRenderer)
             ->withViewPath(__DIR__)
             ->render('template', [
                 'model' => $model,

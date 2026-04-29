@@ -14,6 +14,7 @@ use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Router\HydratorAttribute\RouteArgument;
 use Yiisoft\Router\UrlGeneratorInterface;
 use Yiisoft\Yii\View\Renderer\ViewRenderer;
+use Yiisoft\Yii\View\Renderer\WebViewRenderer;
 
 final readonly class Action
 {
@@ -41,7 +42,8 @@ final readonly class Action
 
         /** @var Message $model */
 
-        return $this->viewRenderer
+        return $request
+            ->getAttribute(WebViewRenderer::class, $this->viewRenderer)
             ->withViewPath(__DIR__)
             ->render('template', [
                 'model'  => $model,

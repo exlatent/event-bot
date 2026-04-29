@@ -18,6 +18,7 @@ use Yiisoft\Json\Json;
 use Yiisoft\Router\FastRoute\UrlGenerator;
 use Yiisoft\Router\UrlGeneratorInterface;
 use Yiisoft\Yii\View\Renderer\ViewRenderer;
+use Yiisoft\Yii\View\Renderer\WebViewRenderer;
 
 final readonly class Action
 {
@@ -54,7 +55,8 @@ final readonly class Action
                 '/admin/message?page=' . $page);
         }
 
-        return $this->viewRenderer
+        return $request
+            ->getAttribute(WebViewRenderer::class, $this->viewRenderer)
             ->withViewPath(__DIR__)
             ->render('template', [
                 'data' => $paginator,

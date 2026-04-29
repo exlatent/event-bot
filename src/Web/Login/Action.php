@@ -7,18 +7,16 @@ namespace App\Web\Login;
 
 use App\Asset\BootstrapAsset;
 use App\Domain\Identity\IdentityRepository;
-use App\Domain\User\Repository\UserRepository;
 use App\Domain\User\User;
 use HttpSoft\Message\ResponseFactory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Yiisoft\Assets\AssetManager;
-use Yiisoft\Db\Connection\ConnectionInterface;
 use Yiisoft\Http\Method;
 use Yiisoft\Security\PasswordHasher;
 use Yiisoft\User\CurrentUser;
 use Yiisoft\FormModel\FormHydrator;
-use Yiisoft\Yii\View\Renderer\ViewRenderer;
+use Yiisoft\Yii\View\Renderer\WebViewRenderer;
 
 final readonly class Action
 {
@@ -26,7 +24,7 @@ final readonly class Action
         private ResponseFactory $responseFactory,
         private CurrentUser $currentUser,
         private FormHydrator $formHydrator,
-        private ViewRenderer $viewRenderer,
+        private WebViewRenderer $viewRenderer,
         private AssetManager $assetManager,
         private IdentityRepository $identityRepository
 
@@ -36,7 +34,7 @@ final readonly class Action
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
         if (!$this->currentUser->isGuest()) {
-            return $this->responseFactory->createResponse()->withStatus(302)->withHeader('Location', '/');
+            return $this->responseFactory->createResponse()->withStatus(302)->withHeader('Location', '/admin');
         }
 
         $form = new Form();
@@ -53,7 +51,7 @@ final readonly class Action
                     return $this->renderForm($form);
                 } else {
                     $this->currentUser->login($user);
-                    return $this->responseFactory->createResponse()->withStatus(302)->withHeader('Location', '/');
+                    return $this->responseFactory->createResponse()->withStatus(302)->withHeader('Location', '/admin');
                 }
             }
         }

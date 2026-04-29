@@ -12,5 +12,5 @@ return [
     ,
     EventRepository::class        => static function (ContainerInterface $container) {
         return new EventRepository($container->get(ConnectionInterface::class));
-    },
+    }
 ];

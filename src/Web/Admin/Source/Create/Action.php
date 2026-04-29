@@ -29,6 +29,7 @@ use Yiisoft\User\CurrentUser;
 use Yiisoft\Yii\View\Renderer\ViewRenderer;
 use Yiisoft\Yii\DataView\Pagination\OffsetPagination;
 use danog\MadelineProto\RPCErrorException;
+use Yiisoft\Yii\View\Renderer\WebViewRenderer;
 
 final readonly class Action
 {
@@ -70,7 +71,8 @@ final readonly class Action
 
         }
 
-        return $this->viewRenderer
+        return $request
+            ->getAttribute(WebViewRenderer::class, $this->viewRenderer)
             ->withViewPath(__DIR__)
             ->render('template',
                 ['flash' => $this->flash]

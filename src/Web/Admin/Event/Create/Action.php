@@ -52,14 +52,15 @@ final readonly class Action
                     '/admin/event');
             }
         }
-
-        return $this->viewRenderer
-            ->withViewPath(__DIR__)
-            ->render('template',
-                [
-                    'form'  => $form,
-                    'flash' => $this->flash
-                ]
-            );
+        return
+            $request
+                ->getAttribute(WebViewRenderer::class, $this->viewRenderer)
+                ->withViewPath(__DIR__)
+                ->render('template',
+                    [
+                        'form'  => $form,
+                        'flash' => $this->flash
+                    ]
+                );
     }
 }

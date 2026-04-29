@@ -18,23 +18,21 @@ use Yiisoft\Yii\DataView\GridView\GridView;
 
 
 ?>
-
-<main>
-    <div class="container">
-        <div class="d-flex justify-content-between mb-3">
-            <h2>Messages</h2>
-            <?=
-            Html::form()
-                ->post()
-                ->action('/admin/message')
-                ->csrf($csrf)
-                ->open()
-            ?>
-            <?= Html::hiddenInput('selected') ?>
-            <button type="submit" class="btn btn-sm btn-danger float-right">Remove selected</button>
-            <?= Html::form()->close() ?>
-        </div>
-
+<div class="container">
+    <div class="d-flex justify-content-between mb-3">
+        <h2>Messages</h2>
+        <?=
+        Html::form()
+            ->post()
+            ->action('/admin/message')
+            ->csrf($csrf)
+            ->open()
+        ?>
+        <?= Html::hiddenInput('selected') ?>
+        <button type="submit" class="btn btn-danger float-right">Remove selected</button>
+        <?= Html::form()->close() ?>
+    </div>
+    <div class="table-responsive">
         <?= GridView::widget()
             ->dataReader($data)
             ->urlCreator(function (array $arguments, array $queryParameters): string {
@@ -92,7 +90,7 @@ use Yiisoft\Yii\DataView\GridView\GridView;
                         }
                     }
                 ),
-    
+
                 new ActionColumn('{view} {update}', null, null, null,
                     function ($action, DataContext $context) use ($url) {
                         return $url->generate("admin:message:{$action}", ['id' => $context->data->id]);
@@ -107,10 +105,9 @@ use Yiisoft\Yii\DataView\GridView\GridView;
                 ),
             )
         ?>
-
     </div>
 
-</main>
+</div>
 
 <?php
 $this->registerJsFile('/js/message_list.js', $this::POSITION_END, [

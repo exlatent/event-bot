@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Rbac\AdminPanelPermission;
 use App\Domain\Rbac\CheckAccess;
 use App\Web;
+use App\Web\Admin\LayoutMiddleware;
 use Yiisoft\Router\Group;
 use Yiisoft\Router\Route;
 
@@ -20,7 +21,7 @@ return [
             ->action(Web\Login\Action::class)
             ->name('login'),
 
-        Route::post('/logout')
+        Route::get('/logout')
             ->action(Web\Logout\Action::class)
             ->name('logout')
     ),
@@ -28,7 +29,9 @@ return [
 
     Group::create('/admin')
         ->middleware(CheckAccess::definition(AdminPanelPermission::PERM_NAME))
+        ->middleware(LayoutMiddleware::class)
         ->routes(
+            Route::get('')->action(Web\Admin\Index\Action::class)->name('admin:index'),
             Group::create('/source')
                 ->routes(
                     Route::get('')->action(Web\Admin\Source\Index\Action::class)->name('admin:source:index'),
@@ -55,6 +58,7 @@ return [
                         ->action(Web\Admin\Event\Update\Action::class)->name('admin:event:update'),
                     Route::methods(['GET', 'POST'], '/create')
                         ->action(Web\Admin\Event\Create\Action::class)->name('admin:event:create'),
-                )
+                ),
+            Route::get('/tg-user')->action(Web\Admin\TgUser\Action::class)->name('admin:tg-user'),
         ),
 ];

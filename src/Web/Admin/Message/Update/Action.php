@@ -55,7 +55,8 @@ final readonly class Action
             }
         }
 
-        return $this->viewRenderer
+        return $request
+            ->getAttribute(WebViewRenderer::class, $this->viewRenderer)
             ->withViewPath(__DIR__)
             ->render('template', [
                 'model' => $model,

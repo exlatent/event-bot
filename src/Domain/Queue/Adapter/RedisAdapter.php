@@ -42,7 +42,7 @@ readonly class RedisAdapter implements AdapterInterface
         $this->client->lpush(
             $this->channel,
             json_encode([
-                'handler' => $message->getHandlerName(),
+                'handler' => $message->getType(),
                 'data' => $message->getData(),
             ])
         );

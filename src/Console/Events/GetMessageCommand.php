@@ -66,7 +66,6 @@ final class GetMessageCommand extends Command
                     $source_repo->save($source);
                 }
             }
-
             return Command::SUCCESS;
         } catch (\Throwable $e) {
             $output->writeln('Error: ' . $e->getMessage());

@@ -31,54 +31,59 @@ final class GetSourceCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $api = $this->client->getApi();
+        try {
+            $api = $this->client->getApi();
 
-        $repo = new SourceRepository($this->connection);
+            $repo = new SourceRepository($this->connection);
 
-        $queries = [
-            'афиша батуми',
-            'батуми концерты',
-            'квиз батуми',
-            'анонсы Батуми',
-            'мероприятия Батуми',
-            'концерты Батуми',
-            'театр Батуми',
-            'выставки Батуми',
-            'сходки Батуми',
-            'вечеринки Батуми',
-            'куда сходить Батуми',
-            'Батуми c детьми',
-        ];
+            $queries = [
+                'афиша батуми',
+                'батуми концерты',
+                'квиз батуми',
+                'анонсы Батуми',
+                'мероприятия Батуми',
+                'концерты Батуми',
+                'театр Батуми',
+                'выставки Батуми',
+                'сходки Батуми',
+                'вечеринки Батуми',
+                'куда сходить Батуми',
+                'Батуми c детьми',
+            ];
 
-        foreach ($queries as $q) {
+            foreach ($queries as $q) {
 
-            $result = $api->contacts->search(['q' => $q]);
+                $result = $api->contacts->search(['q' => $q]);
 
-            if (!empty($result['chats'])) {
-                foreach ($result['chats'] as $user) {
-                    $last_message_result = $api->messages->getHistory([
-                        'peer'  => $user['username'],
-                        'limit' => 1
-                    ]);
-                    if ($repo->findOne(['tg_id' => $user['id']])) {
-                        continue;
-                    }
-                    if ($last_message_result['messages'][0] && $last_message_result['messages'][0]['date'] > time() - 60 * 60 * 24 * 30) {
-                        $source = new Source(
-                            tg_id: $user['id'],
-                            username: $user['username'],
-                            title: $user['title'],
-                            is_active: true,
-                            createdAt: ApplicationDateTime::toDb(ApplicationDateTime::now()),
-                            updatedAt: ApplicationDateTime::toDb(ApplicationDateTime::now()),
-                        );
+                if (!empty($result['chats'])) {
+                    foreach ($result['chats'] as $user) {
+                        $last_message_result = $api->messages->getHistory([
+                            'peer'  => $user['username'],
+                            'limit' => 1
+                        ]);
+                        if ($repo->findOne(['tg_id' => $user['id']])) {
+                            continue;
+                        }
+                        if ($last_message_result['messages'][0] && $last_message_result['messages'][0]['date'] > time() - 60 * 60 * 24 * 30) {
+                            $source = new Source(
+                                tg_id: $user['id'],
+                                username: $user['username'],
+                                title: $user['title'],
+                                is_active: true,
+                                createdAt: ApplicationDateTime::toDb(ApplicationDateTime::now()),
+                                updatedAt: ApplicationDateTime::toDb(ApplicationDateTime::now()),
+                            );
 
-                        $repo->save($source);
+                            $repo->save($source);
+                        }
                     }
                 }
             }
-        }
 
-        return Command::SUCCESS;
+            return Command::SUCCESS;
+        } catch (\Throwable $e) {
+            $output->writeln('Error: ' . $e->getMessage());
+            return Command::FAILURE;
+        }
     }
 }

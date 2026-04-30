@@ -17,14 +17,13 @@ final class MPInitCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $output->writeln('Starting Telegram authorization...');
+
         $this->telegram->connect();
-//        $output->writeln('Starting Telegram authorization...');
-//
-//        $this->telegram->connect();
-//
-//        $me = $this->telegram->getMe();
-//
-//        $output->writeln('Authorized as: ' . ($me['username'] ?? 'unknown'));
+
+        $me = $this->telegram->getMe();
+
+        $output->writeln('Authorized as: ' . ($me['username'] ?? 'unknown'));
 
         return Command::SUCCESS;
     }

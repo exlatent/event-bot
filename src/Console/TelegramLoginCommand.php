@@ -18,7 +18,7 @@ final class TelegramLoginCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Starting Telegram authorization...');
-        $api = $this->telegram->getApi();
+        $api = $this->telegram->connect();
         $me = $api->getSelf();
         if (!$me) {
 

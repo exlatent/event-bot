@@ -64,11 +64,12 @@ final class TelegramClient
 
     public function connect()
     {
-        $this->client->start();
-    }
+        if ($this->client === null) {
+            throw new \RuntimeException('Client not initialized');
+        }
 
-    public function getApi(): ?API
-    {
+        $this->client->start();
+
         return $this->client;
     }
 }

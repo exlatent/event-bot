@@ -33,7 +33,7 @@ final class GetMessageCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $api = $this->client->getApi();
+            $api = $this->client->connect();
             $message_repo = new MessageRepository($this->connection);
             $source_repo = new SourceRepository($this->connection);
 

@@ -32,7 +32,7 @@ final class GetSourceCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $api = $this->client->getApi();
+            $api = $this->client->connect();
 
             $repo = new SourceRepository($this->connection);
 

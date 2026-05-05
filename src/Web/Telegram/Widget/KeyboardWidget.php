@@ -78,7 +78,13 @@ class KeyboardWidget
                 Keyboard::inlineButton([
                     'text'          => '💬 Обратная связь',
                     'url' => 'https://t.me/' . Settings::ADMIN_USERNAME
-                ])
+                ]),
+                Keyboard::inlineButton([
+                    'text'          => '✨ Поддержать',
+                    'callback_data' => Json::encode([
+                        'action' => 'donation'
+                    ])
+                ]),
             ]);
 
         return $keyboard;

@@ -9,4 +9,5 @@ class DialogState
 {
     public const string START_MENU = 'start_menu';
     public const string EMPTY_RESULT = 'empty_result';
+    public const string DONATION = 'donation';
 }

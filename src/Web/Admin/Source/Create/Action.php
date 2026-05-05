@@ -81,7 +81,7 @@ final readonly class Action
 
     private function getTgSource(string $username): ?array
     {
-        $api = $this->client->getApi();
+        $api = $this->client->connect();
         $info = $api->getInfo("@$username");
         return $info['Chat'] ?? null;
     }

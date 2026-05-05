@@ -6,6 +6,7 @@ declare(strict_types=1);
 namespace App\Web\Telegram;
 
 use App\Web\Telegram\Callbacks\DigestCallback;
+use App\Web\Telegram\Callbacks\DonationCallback;
 use App\Web\Telegram\Command\StartCommand;
 use Psr\Log\LoggerInterface;
 use Telegram\Bot\Api;
@@ -16,7 +17,7 @@ final readonly class Router
     public function __construct(
         private StartCommand $startCommand,
         private DigestCallback $digestCallback,
-        private Api $bot
+        private DonationCallback $donationCallback,
     ) {
     }
 
@@ -43,6 +44,10 @@ final readonly class Router
 
         if ($action === 'digest') {
             $this->digestCallback->handle($callback);
+        }
+
+        if ($action === 'donation') {
+            $this->donationCallback->handle($callback);
         }
     }
 }

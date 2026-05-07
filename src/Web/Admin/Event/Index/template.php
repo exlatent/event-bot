@@ -21,44 +21,14 @@ use Yiisoft\Yii\DataView\GridView\GridView;
     <div class="d-flex justify-content-between align-items-start mb-3">
         <h2>Events</h2>
         <div class="d-flex">
-            <?= Html::button('Filters ↓', [
-                'class' => 'btn btn-outline-secondary m-2 mb-0 mt-0',
-                'data-bs-toggle' => 'collapse',
-                'data-bs-target' => '#filters',
-                'aria-expanded' => 'false',
-            ]) ?>
-
             <?= Html::a('+ Add', $url->generate('admin:event:create'), [
                 'class' => 'btn btn-primary d-flex align-items-center ms-2'
             ]) ?>
         </div>
     </div>
-    <div id="filters" class="collapse mt-2 pb-2">
-        <div class="card card-body">
-            <?= $this->render('search', [
-                'filter' => $filter
-            ])?>
-        </div>
-    </div>
-    <div class="table-responsive">
+    <div class="grid-view table-responsive">
         <?= GridView::widget()
             ->dataReader($data)
-            ->urlCreator(function (array $arguments, array $queryParameters): string {
-                $url = '';
-                if ($queryParameters) {
-                    $url .= ' ? ' . http_build_query($queryParameters);
-                }
-                return $url;
-            })
-            ->offsetPaginationConfig([
-                'listTag()'           => ['ul'],
-                'listAttributes()'    => [['class' => 'pagination']],
-                'itemTag()'           => ['li'],
-                'itemAttributes()'    => [['class' => 'page - item']],
-                'linkAttributes()'    => [['class' => 'page - link']],
-                'currentItemClass()'  => ['active'],
-                'disabledItemClass()' => ['disabled'],
-            ])
             ->tableClass('table table-striped table-hover table-bordered')
             ->columns(
                 new DataColumn('id'),
@@ -73,7 +43,7 @@ use Yiisoft\Yii\DataView\GridView\GridView;
                         }
                     }
                 ),
-                new DataColumn('title'),
+                new DataColumn(property: 'title', filter: true),
                 new DataColumn(
                     property: 'datetime',
                     content: function (Event $model) {
@@ -86,7 +56,8 @@ use Yiisoft\Yii\DataView\GridView\GridView;
                     property: 'state',
                     content: function (Event $model) {
                         return Event::$states[$model->state];
-                    }
+                    },
+                    filter: Event::$states
                 ),
                 new ActionColumn('{view} {update}', null, null, null,
                     function ($action, DataContext $context) use ($url) {

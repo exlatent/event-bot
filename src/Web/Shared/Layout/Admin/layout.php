@@ -55,6 +55,11 @@ $this->beginPage()
         width: 1rem;
         height: 1rem;
     }
+
+    .grid-view .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
 </style>
 <body class="">
 <?php $this->beginBody() ?>

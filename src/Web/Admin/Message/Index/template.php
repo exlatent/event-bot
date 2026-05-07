@@ -1,15 +1,18 @@
 <?php
 
-
-/** @var \App\Domain\Telegram\Repository\SourceRepository $source_repository */
-/** @var \Yiisoft\Router\UrlGeneratorInterface $url */
-
-/** @var \Yiisoft\View\WebView $this */
+/** @var SourceRepository $source_repository */
+/** @var UrlGeneratorInterface $url */
+/** @var WebView $this */
+/** @var DataReader $data */
 
 use App\Domain\Telegram\Message;
+use App\Domain\Telegram\Repository\SourceRepository;
 use App\Shared\ApplicationDateTime;
+use App\Web\Admin\Message\Index\DataReader;
 use Yiisoft\Html\Html;
 use Yiisoft\Html\Tag\Input\Checkbox;
+use Yiisoft\Router\UrlGeneratorInterface;
+use Yiisoft\View\WebView;
 use Yiisoft\Yii\DataView\GridView\Column\ActionColumn;
 use Yiisoft\Yii\DataView\GridView\Column\Base\DataContext;
 use Yiisoft\Yii\DataView\GridView\Column\CheckboxColumn;
@@ -32,25 +35,9 @@ use Yiisoft\Yii\DataView\GridView\GridView;
         <button type="submit" class="btn btn-danger float-right">Remove selected</button>
         <?= Html::form()->close() ?>
     </div>
-    <div class="table-responsive">
+    <div class="grid-view table-responsive">
         <?= GridView::widget()
             ->dataReader($data)
-            ->urlCreator(function (array $arguments, array $queryParameters): string {
-                $url = '';
-                if ($queryParameters) {
-                    $url .= '?' . http_build_query($queryParameters);
-                }
-                return $url;
-            })
-            ->offsetPaginationConfig([
-                'listTag()'           => ['ul'],
-                'listAttributes()'    => [['class' => 'pagination']],
-                'itemTag()'           => ['li'],
-                'itemAttributes()'    => [['class' => 'page-item']],
-                'linkAttributes()'    => [['class' => 'page-link']],
-                'currentItemClass()'  => ['active'],
-                'disabledItemClass()' => ['disabled'],
-            ])
             ->tableClass('table table-striped table-hover table-bordered')
             ->columns(
                 new DataColumn('id'),
@@ -59,7 +46,8 @@ use Yiisoft\Yii\DataView\GridView\GridView;
                     header: 'Source',
                     content: function (Message $model) use ($source_repository) {
                         return $source_repository->findOne(['id' => $model->source_id])->title ?? 'Unknown';
-                    }
+                    },
+                    filter: $source_repository->getList()
                 ),
                 new DataColumn(
                     property: 'message',
@@ -67,7 +55,8 @@ use Yiisoft\Yii\DataView\GridView\GridView;
                         return mb_strlen($model->message) > 100
                             ? mb_substr($model->message, 0, 100) . '...'
                             : $model->message;
-                    }
+                    },
+                    filter: true
                 ),
                 new DataColumn(
                     property: 'date',
@@ -81,7 +70,9 @@ use Yiisoft\Yii\DataView\GridView\GridView;
                         return ApplicationDateTime::toUserTz(ApplicationDateTime::fromDb($model->createdAt));
                     }
                 ),
-                new DataColumn('event_candidate'),
+                new DataColumn(
+                    property: 'event_candidate',
+                    filter: [0 => 'No', 1 => 'Yes']),
                 new DataColumn(
                     property: 'processedAt',
                     content: function (Message $model) {

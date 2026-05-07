@@ -3,18 +3,18 @@
 declare(strict_types=1);
 
 
-namespace App\Web\Admin\Event\Index;
+namespace App\Web\Admin\Message\Index;
 
-use App\Domain\Event\Event;
+use App\Domain\Telegram\Message;
+use App\Domain\Telegram\Repository\MessageRepository;
 use Yiisoft\Data\Db\QueryDataReader;
 use Yiisoft\Data\Reader\Sort;
 use Yiisoft\Db\Connection\ConnectionInterface;
-use App\Domain\Event\Repository\EventRepository;
 
 final class DataReader extends QueryDataReader
 {
     public function __construct(
-        EventRepository $repository,
+        MessageRepository $repository,
         ConnectionInterface $db
     ) {
         parent::__construct(
@@ -22,23 +22,23 @@ final class DataReader extends QueryDataReader
                 ->resultCallback(
                     static function (array $rows): array {
                         return array_map(
-                            static fn(array $row) => new Event(
+                            static fn(array $row) => new Message(
                                 id: (int) $row['id'],
-                                message_id: (int) $row['message_id'],
-                                title: $row['title'],
-                                datetime: $row['datetime'],
-                                location: $row['location'],
-                                price: $row['price'],
-                                state: (int) $row['state']
+                                source_id: (int) $row['source_id'],
+                                message: $row['message'],
+                                date: $row['date'],
+                                createdAt: $row['createdAt'],
+                                event_candidate: (int)$row['event_candidate'],
+                                processedAt: $row['processedAt']
                             ),
                             $rows,
                         );
                     }
                 ),
             Sort::only([
-                'id', 'title', 'datetime', 'state'
+                'id', 'source_id', 'date', 'createdAt', 'event_candidate', 'processedAt'
             ]),
         );
     }
-
 }
+

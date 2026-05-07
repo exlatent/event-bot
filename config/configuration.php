@@ -39,6 +39,7 @@ return [
         'bootstrap' => 'common/bootstrap.php',
         'bootstrap-web' => '$bootstrap',
         'bootstrap-console' => '$bootstrap',
+        'widgets-site' => 'web/widgets.php',
     ],
     'config-plugin-environments' => [
         Environment::DEV => [

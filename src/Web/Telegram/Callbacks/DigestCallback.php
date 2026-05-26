@@ -94,7 +94,7 @@ final readonly class DigestCallback
 
         switch ($period) {
             case Period::TODAY:
-                $from = $now->setTime(0, 0);
+                $from = $now->modify('-1 hour');
                 $to = $now->setTime(23, 59, 59);
                 break;
 
@@ -105,12 +105,14 @@ final readonly class DigestCallback
                 break;
 
             case Period::CURRENT_WEEK:
-                $from = $now->setTime(0, 0);
+                $from = $now->modify('-1 hour');
                 $to = $now->modify('sunday this week')->setTime(23, 59, 59);
                 break;
 
             case Period::HOLIDAYS:
-                $from = $now->modify('saturday this week')->setTime(0, 0);
+                $saturday = $now->modify('saturday this week')->setTime(0, 0);
+                $minusHour = $now->modify('-1 hour');
+                $from = $saturday > $minusHour ? $saturday : $minusHour;
                 $to = $now->modify('sunday this week')->setTime(23, 59, 59);
                 break;
         }

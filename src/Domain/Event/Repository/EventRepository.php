@@ -66,10 +66,13 @@ class EventRepository extends AbstractRepository
     public function findDigestEvents(string $from, string $to, int $page = 1, int $limit = 20)
     {
         $query = new Query($this->connection)
-            ->from(self::tableName())
+            ->from(['e' => self::tableName()])
+            ->innerJoin(['m' => MessageRepository::tableName()], 'm.id=e.message_id')
+            ->innerJoin(['s' => SourceRepository::tableName()], 's.id=m.source_id')
             ->where(['between', 'datetime', $from, $to])
             ->andWhere([
                 'state'           => Event::STATE_PUBLISHED,
+                's.is_active'     => 1,
                 'duplicate_of_id' => null,
             ])
             ->orderBy('datetime')

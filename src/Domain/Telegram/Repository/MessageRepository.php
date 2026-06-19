@@ -43,8 +43,10 @@ final class MessageRepository extends AbstractRepository
 
     public function findEventCandidates(int $limit = 20): array
     {
-        $rows = (new Query($this->connection))
-            ->from(self::tableName())
+        return new Query($this->connection)
+            ->from(['m' => self::tableName()])
+            ->select(['m.*', 's.title AS channel_name'])
+            ->leftJoin(['s' => SourceRepository::tableName()], 's.id = m.source_id')
             ->where([
                 'event_candidate' => 1,
                 'spam'            => 0,
@@ -54,7 +56,5 @@ final class MessageRepository extends AbstractRepository
             ->andWhere(['>', 'confidence', 0.7])
             ->limit($limit)
             ->all();
-
-        return array_map(fn($row) => $this->fromRow($row), $rows);
     }
 }

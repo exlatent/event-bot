@@ -69,15 +69,18 @@ final class GenerateEventsCommand extends Command
 
         foreach ($batch as $message) {
             $message_json = Json::encode([
-                'id'   => $message->id,
-                'text' => $message->message,
+                'id'   => $message['id'],
+                'text' => $message['message'],
+                'datetime' => $message['date'],
+                'channel' => $message['channel_name']
             ]);
+
             $response = $client->chat()->create([
                 'model'    => 'gpt-5-nano',
                 'messages' => [
                     [
                         'role'    => 'system',
-                        'content' => 'Ты анализируешь сообщения из Telegram-каналов города Батуми.'
+                        'content' => 'Ты анализируешь сообщения из Telegram-каналов города Батуми.' . 'Сегодняшняя дата: ' . date('Y-m-d') . '. Используй эту дату как текущую.'
                     ],
                     [
                         'role'    => 'user',
@@ -86,8 +89,8 @@ final class GenerateEventsCommand extends Command
                 Из каждого сообщения выдели одно или несколько событий, для каждого определи:
                 title — название события
                 datetime — дата и время начала события
-                location — место проведения
-                price — стоимость посещения (если есть)
+                location — место проведения. Если явно не указано, посмотри на название канала.
+                price — стоимость посещения (если есть, укажи ее. Если бесплатно, укажи Бесплатно. Если не указана, верни Не указана.)
 
                 Ответ верни в JSON массиве.
 
@@ -123,7 +126,7 @@ final class GenerateEventsCommand extends Command
                     }
                     $event_repo = new EventRepository($this->connection);
                     $event_entity = new Event(
-                        message_id: $message->id,
+                        message_id: (int)$message['id'],
                         title: $event['title'],
                         datetime: ApplicationDateTime::toDb(ApplicationDateTime::fromInput($event['datetime'])),
                         location: $event['location'],

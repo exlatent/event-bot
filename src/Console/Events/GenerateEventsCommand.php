@@ -6,6 +6,7 @@ namespace App\Console\Events;
 
 use App\Domain\Event\Event;
 use App\Domain\Event\Repository\EventRepository;
+use App\Domain\Telegram\Message;
 use App\Domain\Telegram\Repository\MessageRepository;
 use App\Infrastructure\Exceptions\InvalidJsonException;
 use App\Shared\ApplicationDateTime;
@@ -28,6 +29,7 @@ final class GenerateEventsCommand extends Command
     public function __construct(
         private readonly ConnectionInterface $connection,
         private readonly ApplicationParams $params,
+        private readonly MessageRepository $messageRepository
 
     ) {
         parent::__construct();
@@ -35,12 +37,11 @@ final class GenerateEventsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        try {
-            $repo = new MessageRepository($this->connection);
+        try {);
             $messages_processed = 0;
             $events_created = 0;
             while (true) {
-                $batch = $repo->findEventCandidates();
+                $batch = $this->messageRepository->findEventCandidates();
                 if (empty($batch)) {
                     break;
                 }
@@ -139,9 +140,12 @@ final class GenerateEventsCommand extends Command
                     $event_repo->save($event_entity);
                     ++$count_events;
                 }
-
-                $message->processedAt = ApplicationDateTime::toDb(ApplicationDateTime::now());
-                $repo->save($message);
+                $message = $this->messageRepository->findOne(['id' => $message['id']]);
+                /** @var Message $message */
+                if($message) {
+                    $message->processedAt = ApplicationDateTime::toDb(ApplicationDateTime::now());
+                    $repo->save($message);
+                }
                 ++$count_messages;
 
             } catch (\JsonException $e) {

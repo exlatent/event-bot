@@ -66,6 +66,7 @@ class EventRepository extends AbstractRepository
     public function findDigestEvents(string $from, string $to, int $page = 1, int $limit = 20)
     {
         $query = new Query($this->connection)
+            ->select('e.*')
             ->from(['e' => self::tableName()])
             ->innerJoin(['m' => MessageRepository::tableName()], 'm.id=e.message_id')
             ->innerJoin(['s' => SourceRepository::tableName()], 's.id=m.source_id')

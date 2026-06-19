@@ -11,6 +11,7 @@ use App\Domain\Telegram\Repository\MessageRepository;
 use App\Infrastructure\Exceptions\InvalidJsonException;
 use App\Shared\ApplicationDateTime;
 use App\Shared\ApplicationParams;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,7 +30,8 @@ final class GenerateEventsCommand extends Command
     public function __construct(
         private readonly ConnectionInterface $connection,
         private readonly ApplicationParams $params,
-        private readonly MessageRepository $messageRepository
+        private readonly MessageRepository $messageRepository,
+        private readonly LoggerInterface $logger
 
     ) {
         parent::__construct();
@@ -56,7 +58,7 @@ final class GenerateEventsCommand extends Command
             }
             return Command::SUCCESS;
         } catch (\Throwable $e) {
-            echo $e->getMessage();
+            $this->logger->error($e->getTraceAsString());
             return Command::FAILURE;
         }
     }
@@ -68,13 +70,21 @@ final class GenerateEventsCommand extends Command
         $repo = new MessageRepository($this->connection);
         $client = \OpenAI::client($this->params->openaiApiKey);
 
+
         foreach ($batch as $message) {
-            $message_json = Json::encode([
-                'id'   => $message['id'],
-                'text' => $message['message'],
-                'datetime' => $message['date'],
-                'channel' => $message['channel_name']
-            ]);
+            try {
+                $message_json = Json::encode([
+                    'id'   => $message['id'],
+                    'text' => $message['message'],
+                    'datetime' => $message['date'],
+                    'channel' => $message['channel_name']
+                ]);
+            } catch(\Throwable $e) {
+                $this->logger->error($e->getMessage());
+                $this->logger->info($message);
+                break;
+            }
+
 
             $response = $client->chat()->create([
                 'model'    => 'gpt-5-nano',
@@ -89,7 +99,7 @@ final class GenerateEventsCommand extends Command
                 Проанализируй список сообщений из Telegram.
                 Из каждого сообщения выдели одно или несколько событий, для каждого определи:
                 title — название события
-                datetime — дата и время начала события
+                datetime — дата и время начала события. Если не удается определить, не добавляй событие в список.
                 location — место проведения. Если явно не указано, посмотри на название канала.
                 price — стоимость посещения (если есть, укажи ее. Если бесплатно, укажи Бесплатно. Если не указана, верни Не указана.)
 
@@ -116,29 +126,36 @@ final class GenerateEventsCommand extends Command
             try {
                 $result = Json::decode($text);
                 foreach ($result as $event) {
-                    if (
-                        empty($event['title'])
-                        || empty($event['datetime'])
-                        || ApplicationDateTime::fromDb($event['datetime']) < ApplicationDateTime::now()
-                        || empty($event['location'])
-                        || empty($event['price'])
-                    ) {
-                        continue;
-                    }
-                    $event_repo = new EventRepository($this->connection);
-                    $event_entity = new Event(
-                        message_id: (int)$message['id'],
-                        title: $event['title'],
-                        datetime: ApplicationDateTime::toDb(ApplicationDateTime::fromInput($event['datetime'])),
-                        location: $event['location'],
-                        price: $event['price'],
-                        state: Event::STATE_DRAFT,
-                        createdAt: ApplicationDateTime::toDb(ApplicationDateTime::now()),
-                        updatedAt: ApplicationDateTime::toDb(ApplicationDateTime::now())
-                    );
+                    try {
+                        if (
+                            empty($event['title'])
+                            || empty($event['datetime'])
+                            || ApplicationDateTime::fromDb($event['datetime']) < ApplicationDateTime::now()
+                            || empty($event['location'])
+                            || empty($event['price'])
+                        ) {
+                            continue;
+                        }
+                        $event_repo = new EventRepository($this->connection);
+                        $event_entity = new Event(
+                            message_id: (int)$message['id'],
+                            title: $event['title'],
+                            datetime: ApplicationDateTime::toDb(ApplicationDateTime::fromInput($event['datetime'])),
+                            location: $event['location'],
+                            price: $event['price'],
+                            state: Event::STATE_DRAFT,
+                            createdAt: ApplicationDateTime::toDb(ApplicationDateTime::now()),
+                            updatedAt: ApplicationDateTime::toDb(ApplicationDateTime::now())
+                        );
 
-                    $event_repo->save($event_entity);
-                    ++$count_events;
+                        $event_repo->save($event_entity);
+                        ++$count_events;
+                    }
+                    catch (\Throwable $e) {
+                        $this->logger->error($e->getMessage());
+                        $this->logger->info($event);
+                        break;
+                    }
                 }
                 $message = $this->messageRepository->findOne(['id' => $message['id']]);
                 /** @var Message $message */

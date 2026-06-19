@@ -37,7 +37,7 @@ final class GenerateEventsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        try {);
+        try {
             $messages_processed = 0;
             $events_created = 0;
             while (true) {
